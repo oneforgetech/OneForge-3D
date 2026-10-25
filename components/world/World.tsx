@@ -123,6 +123,14 @@ export function World() {
     v.setAttribute('muted', '');
     v.setAttribute('playsinline', '');
     v.setAttribute('webkit-playsinline', '');
+    // Only reveal the video while it is really playing. Otherwise the poster photo shows and the
+    // browser's own play button (which lives inside the video) stays hidden.
+    const mark = () => {
+      if (!v.paused && !v.ended && v.readyState >= 3) v.setAttribute('data-playing', '');
+      else v.removeAttribute('data-playing');
+    };
+    const markEvents = ['playing', 'pause', 'ended', 'waiting', 'stalled', 'emptied', 'timeupdate'] as const;
+    markEvents.forEach((e) => v.addEventListener(e, mark));
     const tryPlay = () => {
       if (v.paused) v.play().catch(() => {});
     };
@@ -130,6 +138,16 @@ export function World() {
       if (!document.hidden) tryPlay();
     };
     const gestures = ['touchstart', 'pointerdown', 'scroll', 'keydown'] as const;
+    // Safari can end a "looping" background clip (power saving, throttling): restart it by hand.
+    const restart = () => {
+      v.currentTime = 0;
+      tryPlay();
+    };
+    const watchdog = window.setInterval(() => {
+      if (document.hidden) return;
+      if (v.ended) restart();
+      else if (v.paused) tryPlay();
+    }, 1000);
     const onGesture = () => {
       tryPlay();
       if (!v.paused) gestures.forEach((g) => window.removeEventListener(g, onGesture));
@@ -138,9 +156,13 @@ export function World() {
     v.addEventListener('loadeddata', tryPlay);
     v.addEventListener('canplay', tryPlay);
     v.addEventListener('pause', onVisible);
+    v.addEventListener('ended', restart);
     document.addEventListener('visibilitychange', onVisible);
     gestures.forEach((g) => window.addEventListener(g, onGesture, { passive: true }));
     return () => {
+      window.clearInterval(watchdog);
+      markEvents.forEach((e) => v.removeEventListener(e, mark));
+      v.removeEventListener('ended', restart);
       v.removeEventListener('loadeddata', tryPlay);
       v.removeEventListener('canplay', tryPlay);
       v.removeEventListener('pause', onVisible);
@@ -170,10 +192,13 @@ export function World() {
                 style={{ '--fx': `${bgFocus(i)[0] * 100}%`, '--fy': `${bgFocus(i)[1] * 100}%`, backgroundImage: c.bg.placeholder ? `url(${c.bg.placeholder})` : undefined } as React.CSSProperties}
               >
                 {c.bg.video ? (
-                  <video data-hero-video muted loop playsInline autoPlay preload="auto" controls={false} disablePictureInPicture disableRemotePlayback tabIndex={-1} poster={c.bg.src}>
-                    <source src="/video/hero-forge.webm" type="video/webm" />
-                    <source src="/video/hero-forge.mp4" type="video/mp4" />
+                  <>
+                  <Image src={c.bg.src} alt="" fill sizes="100vw" priority />
+                  <video data-hero-video muted loop playsInline autoPlay preload="auto" controls={false} disablePictureInPicture disableRemotePlayback tabIndex={-1}>
+                    <source src="/video/hero-edit2.mp4" type="video/mp4" />
+                    <source src="/video/hero-edit2.webm" type="video/webm" />
                   </video>
+                  </>
                 ) : i <= maxActive + 1 ? (
                   // Photos mount only for the section you're on and the one after it, so six
                   // large images don't fight the page's own code for a slow connection.

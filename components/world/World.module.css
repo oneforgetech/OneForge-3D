@@ -56,6 +56,16 @@
 .bg video {
   pointer-events: none;
 }
+/* the video only shows while it is actually playing; until then the poster photo behind it is visible */
+.bg video[data-hero-video] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.bg video[data-hero-video][data-playing] {
+  opacity: 1;
+}
 .bg video::-webkit-media-controls,
 .bg video::-webkit-media-controls-start-playback-button,
 .bg video::-webkit-media-controls-overlay-play-button,

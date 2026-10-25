@@ -72,7 +72,7 @@ export function Rooms() {
 
   return (
     <section ref={ref} id="who" className={`${a.bleed} ${a.rooms}`} data-snap>
-      <Photo src="/images/backdrops/walking.jpg" scrim={{ '--scrim-l': 0.9, '--scrim-m': 0.68, '--scrim-r': 0.38 } as React.CSSProperties} />
+      <Photo src="/images/backdrops/parted.jpg" scrim={{ '--scrim-l': 0.9, '--scrim-m': 0.68, '--scrim-r': 0.38 } as React.CSSProperties} />
       <div className={a.roomsGrid}>
         <ul className={a.roomList}>
           {ROOMS.map((r, i) => (
@@ -153,7 +153,7 @@ export function Closing() {
   useProgress(ref, 'cross');
   return (
     <section ref={ref} className={`${a.bleed} ${a.close}`} data-snap>
-      <Photo src="/images/backdrops/stillness.jpg" scrim={{ '--scrim-l': 0.88, '--scrim-m': 0.66, '--scrim-r': 0.4 } as React.CSSProperties} />
+      <Photo src="/images/backdrops/walking.jpg" scrim={{ '--scrim-l': 0.88, '--scrim-m': 0.66, '--scrim-r': 0.4 } as React.CSSProperties} />
       <div className={a.closeInner}>
         <div className={a.closeTop}>
           <Reveal>
