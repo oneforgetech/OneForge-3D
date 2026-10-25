@@ -19,15 +19,15 @@ export type Chapter = {
   rests: number[];
 };
 
-const POSTER = '/images/mountain-lake-poster.jpg';
+const POSTER = '/images/hero-fire-poster.jpg';
 
 export const CHAPTERS: Chapter[] = [
   { id: 'arrive', label: 'Arrive', caption: 'Arrive', contentVh: 90, portalVh: 60, bg: { src: POSTER, video: true, focus: [0.5, 0.5], placeholder: PLACEHOLDERS.poster }, dim: 0, rests: [0] },
-  { id: 'divided', label: 'Divided', caption: 'Never meant to live divided', contentVh: 150, portalVh: 55, bg: { src: '/images/backdrops/divided.jpg', focus: [0.8, 0.45], placeholder: PLACEHOLDERS.divided }, dim: 0.66, rests: [0.45, 0.86] },
-  { id: 'feeling', label: 'The feeling', caption: 'You know the feeling', contentVh: 130, portalVh: 55, bg: { src: '/images/backdrops/glass.jpg', placeholder: PLACEHOLDERS.glass }, dim: 0.7, rests: [0.4, 0.84] },
-  { id: 'fronts', label: 'Three fronts', caption: 'Whole on three fronts', contentVh: 170, portalVh: 55, bg: { src: '/images/backdrops/forward.jpg', focus: [0.22, 0.42], placeholder: PLACEHOLDERS.forward }, dim: 0.56, rests: [0.34, 0.84] },
-  { id: 'listen', label: 'Listen', caption: 'Listen', contentVh: 110, portalVh: 55, bg: { src: '/images/backdrops/divided.jpg', focus: [0.8, 0.45], placeholder: PLACEHOLDERS.divided }, dim: 0.68, rests: [0.3] },
-  { id: 'begin', label: 'Begin', caption: 'Begin', contentVh: 110, portalVh: 0, bg: { src: '/images/backdrops/glass.jpg', placeholder: PLACEHOLDERS.glass }, dim: 0.7, rests: [0.3] },
+  { id: 'divided', label: 'Divided', caption: 'Never meant to live divided', contentVh: 150, portalVh: 55, bg: { src: '/images/backdrops/walking.jpg', focus: [0.5, 0.5], placeholder: PLACEHOLDERS.divided }, dim: 0.66, rests: [0.45, 0.86] },
+  { id: 'feeling', label: 'The feeling', caption: 'You know the feeling', contentVh: 130, portalVh: 55, bg: { src: '/images/backdrops/stillness.jpg', placeholder: PLACEHOLDERS.glass }, dim: 0.7, rests: [0.4, 0.84] },
+  { id: 'fronts', label: 'Three fronts', caption: 'Whole on three fronts', contentVh: 170, portalVh: 55, bg: { src: '/images/backdrops/movement.jpg', focus: [0.5, 0.45], placeholder: PLACEHOLDERS.forward }, dim: 0.56, rests: [0.34, 0.84] },
+  { id: 'listen', label: 'Listen', caption: 'Listen', contentVh: 110, portalVh: 55, bg: { src: '/images/backdrops/walking.jpg', focus: [0.5, 0.5], placeholder: PLACEHOLDERS.divided }, dim: 0.68, rests: [0.3] },
+  { id: 'begin', label: 'Begin', caption: 'Begin', contentVh: 110, portalVh: 0, bg: { src: '/images/backdrops/stillness.jpg', placeholder: PLACEHOLDERS.glass }, dim: 0.7, rests: [0.3] },
 ];
 
 export const chapterIndex = (id: string) => CHAPTERS.findIndex((c) => c.id === id);

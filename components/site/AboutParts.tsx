@@ -27,7 +27,7 @@ export function AboutHero() {
   useProgress(ref, 'cross');
   return (
     <section ref={ref} className={`${a.bleed} ${a.hero}`} data-snap>
-      <Photo src="/images/backdrops/glass.jpg" scrim={{ '--scrim-l': 0.82, '--scrim-m': 0.5, '--scrim-r': 0.18 } as React.CSSProperties} />
+      <Photo src="/images/backdrops/stillness.jpg" scrim={{ '--scrim-l': 0.82, '--scrim-m': 0.5, '--scrim-r': 0.18 } as React.CSSProperties} />
       <div className={a.heroInner}>
         <h1 className={`${a.heroTitle} display-heading`}>
           {HERO.map((w, i) => (
@@ -72,7 +72,7 @@ export function Rooms() {
 
   return (
     <section ref={ref} id="who" className={`${a.bleed} ${a.rooms}`} data-snap>
-      <Photo src="/images/backdrops/divided.jpg" scrim={{ '--scrim-l': 0.9, '--scrim-m': 0.68, '--scrim-r': 0.38 } as React.CSSProperties} />
+      <Photo src="/images/backdrops/walking.jpg" scrim={{ '--scrim-l': 0.9, '--scrim-m': 0.68, '--scrim-r': 0.38 } as React.CSSProperties} />
       <div className={a.roomsGrid}>
         <ul className={a.roomList}>
           {ROOMS.map((r, i) => (
@@ -98,7 +98,7 @@ export function VisionMission() {
   useProgress(ref, 'cross');
   return (
     <section ref={ref} className={`${a.bleed} ${a.vm}`} data-snap>
-      <Photo src="/images/backdrops/forward.jpg" scrim={{ '--scrim-l': 0.7, '--scrim-m': 0.55, '--scrim-r': 0.5 } as React.CSSProperties} />
+      <Photo src="/images/backdrops/movement.jpg" scrim={{ '--scrim-l': 0.7, '--scrim-m': 0.55, '--scrim-r': 0.5 } as React.CSSProperties} />
       <div className={a.vmGrid}>
         <Reveal className={a.vmItem}>
           <span className={a.vmLabel}>OUR VISION</span>
@@ -153,7 +153,7 @@ export function Closing() {
   useProgress(ref, 'cross');
   return (
     <section ref={ref} className={`${a.bleed} ${a.close}`} data-snap>
-      <Photo src="/images/backdrops/glass.jpg" scrim={{ '--scrim-l': 0.88, '--scrim-m': 0.66, '--scrim-r': 0.4 } as React.CSSProperties} />
+      <Photo src="/images/backdrops/stillness.jpg" scrim={{ '--scrim-l': 0.88, '--scrim-m': 0.66, '--scrim-r': 0.4 } as React.CSSProperties} />
       <div className={a.closeInner}>
         <div className={a.closeTop}>
           <Reveal>
