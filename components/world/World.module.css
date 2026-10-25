@@ -52,6 +52,19 @@
   transform-origin: 50% 55%;
 }
 
+/* never show the browser's own play button or controls on the background video */
+.bg video {
+  pointer-events: none;
+}
+.bg video::-webkit-media-controls,
+.bg video::-webkit-media-controls-start-playback-button,
+.bg video::-webkit-media-controls-overlay-play-button,
+.bg video::-webkit-media-controls-panel {
+  display: none !important;
+  -webkit-appearance: none;
+  opacity: 0;
+}
+
 /* Must stay in step with drawShade() in lib/world/portal.ts. */
 .shade {
   z-index: 1;

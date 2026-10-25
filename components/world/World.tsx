@@ -110,6 +110,45 @@ export function World() {
     return () => document.body.classList.remove('world-intro');
   }, [introReady]);
 
+  // The hero video is a silent background loop: never show a play button. React doesn't write the
+  // `muted` attribute, which makes iOS Safari refuse to autoplay, so set it by hand and keep trying
+  // (load, tab visible again, first touch) in case the phone is in Low Power / data-saver mode.
+  useEffect(() => {
+    const v = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+    if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    v.loop = true;
+    v.controls = false;
+    v.setAttribute('muted', '');
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
+    const tryPlay = () => {
+      if (v.paused) v.play().catch(() => {});
+    };
+    const onVisible = () => {
+      if (!document.hidden) tryPlay();
+    };
+    const gestures = ['touchstart', 'pointerdown', 'scroll', 'keydown'] as const;
+    const onGesture = () => {
+      tryPlay();
+      if (!v.paused) gestures.forEach((g) => window.removeEventListener(g, onGesture));
+    };
+    tryPlay();
+    v.addEventListener('loadeddata', tryPlay);
+    v.addEventListener('canplay', tryPlay);
+    v.addEventListener('pause', onVisible);
+    document.addEventListener('visibilitychange', onVisible);
+    gestures.forEach((g) => window.addEventListener(g, onGesture, { passive: true }));
+    return () => {
+      v.removeEventListener('loadeddata', tryPlay);
+      v.removeEventListener('canplay', tryPlay);
+      v.removeEventListener('pause', onVisible);
+      document.removeEventListener('visibilitychange', onVisible);
+      gestures.forEach((g) => window.removeEventListener(g, onGesture));
+    };
+  }, []);
+
   // quietly fetch the photo two sections ahead (the next one is loaded by the portal itself)
   useEffect(() => {
     const ahead = active + 2;
@@ -131,7 +170,7 @@ export function World() {
                 style={{ '--fx': `${bgFocus(i)[0] * 100}%`, '--fy': `${bgFocus(i)[1] * 100}%`, backgroundImage: c.bg.placeholder ? `url(${c.bg.placeholder})` : undefined } as React.CSSProperties}
               >
                 {c.bg.video ? (
-                  <video data-hero-video muted loop playsInline autoPlay preload="metadata" poster={c.bg.src}>
+                  <video data-hero-video muted loop playsInline autoPlay preload="auto" controls={false} disablePictureInPicture disableRemotePlayback tabIndex={-1} poster={c.bg.src}>
                     <source src="/video/hero-forge.webm" type="video/webm" />
                     <source src="/video/hero-forge.mp4" type="video/mp4" />
                   </video>
