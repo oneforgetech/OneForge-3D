@@ -3,7 +3,7 @@ import { BreadcrumbStructuredData } from '@/components/chrome/BreadcrumbStructur
 import { AboutHero, Closing, Journey, Rooms, VisionMission } from '@/components/site/AboutParts';
 import { PageShell, Reveal, Section } from '@/components/site/Site';
 import p from '@/components/site/Page.module.css';
-import { BELIEFS, visitCta } from '@/lib/content';
+import { BELIEFS } from '@/lib/content';
 import { buildMetadata } from '@/lib/metadata';
 
 export const metadata = buildMetadata({
@@ -14,7 +14,6 @@ export const metadata = buildMetadata({
 });
 
 export default function Page() {
-  const cta = visitCta();
   return (
     <PageShell>
       <BreadcrumbStructuredData items={[{ label: 'About', path: '/about' }]} />
@@ -62,7 +61,7 @@ export default function Page() {
         </Reveal>
       </Section>
 
-      <Closing href={cta.href} />
+      <Closing />
     </PageShell>
   );
 }

@@ -371,7 +371,7 @@
 
 .closeTitle {
   max-width: 12ch;
-  font-size: clamp(40px, min(7.4vw, 12.5vh), 130px);
+  font-size: clamp(40px, min(7.4vw, 4.7vw + 0.6vh, 11vh), 112px);
   line-height: 0.92;
   letter-spacing: -0.05em;
 }
@@ -553,6 +553,9 @@
 }
 
 @media (max-width: 860px) {
+  .closeTitle {
+    font-size: clamp(40px, min(7.4vw, 12.5vh), 130px);
+  }
   .closeTop {
     grid-template-columns: 1fr;
     gap: 26px;

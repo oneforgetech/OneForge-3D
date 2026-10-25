@@ -51,6 +51,7 @@ export function ConnectForm() {
   const [prayerText, setPrayerText] = useState('');
   const [prayerPrivate, setPrayerPrivate] = useState(true);
   const [question, setQuestion] = useState('');
+  const [message, setMessage] = useState('');
   const [visitDate, setVisitDate] = useState('');
   const [bringingChildren, setBringingChildren] = useState<'yes' | 'no' | ''>('');
   const [childrenAges, setChildrenAges] = useState('');
@@ -114,6 +115,7 @@ export function ConnectForm() {
           visitDate: topic === 'visiting' ? visitDate : undefined,
           bringingChildren: topic === 'visiting' ? bringingChildren : undefined,
           childrenAges: topic === 'visiting' && bringingChildren === 'yes' ? childrenAges : undefined,
+          message: message || undefined,
           permission,
           community,
           website: honeypot,
@@ -332,6 +334,18 @@ export function ConnectForm() {
           <span className={styles.hint}>Groups start in February. We&apos;ll be in touch before then.</span>
         </fieldset>
       )}
+
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="message">Anything else you&apos;d like to tell us? (optional)</label>
+        <textarea
+          id="message"
+          className={styles.textarea}
+          value={message}
+          maxLength={1500}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Write your own message here: a question, a thank you, or whatever is on your mind."
+        />
+      </div>
 
       <label className={styles.checkbox}>
         <input

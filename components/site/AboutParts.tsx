@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { IconMapPin } from '@/components/ui/icons';
 import { CHURCH_MAPS_URL } from '@/lib/church';
 import { useProgress } from '@/lib/useProgress';
@@ -149,7 +148,7 @@ export function Journey() {
 /* --------------------------------------------------------------- closing */
 const COME = ['Come curious.', 'Come with your story', 'Come questioning.', 'Come believing.', 'Come searching.'];
 
-export function Closing({ href }: { href: string }) {
+export function Closing() {
   const ref = useRef<HTMLElement>(null);
   useProgress(ref, 'cross');
   return (
@@ -175,9 +174,6 @@ export function Closing({ href }: { href: string }) {
           <div className={a.closeAction}>
             <p className={a.tag}>Forged to lead. Called to impact</p>
             <div className={a.closeButtons}>
-              <Link href={href} className={a.cta} data-cursor="Go">
-                FIND YOUR PLACE →
-              </Link>
               <a className={a.directions} href={CHURCH_MAPS_URL} target="_blank" rel="noopener noreferrer" data-cursor="Map">
                 <IconMapPin size={18} />
                 Get Directions

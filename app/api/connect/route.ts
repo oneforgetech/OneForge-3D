@@ -119,6 +119,8 @@ export async function POST(request: Request) {
   if (topic === 'serving') fields.push(['Where they could serve', clean(body.serving, LIMITS.text) || '—']);
   if (topic === 'prayer') fields.push(['Prayer request', clean(body.prayerText, LIMITS.text) || '—'], ['Keep private to the prayer team', body.prayerPrivate === false ? 'no' : 'yes']);
   if (topic === 'question') fields.push(['Question', clean(body.question, LIMITS.text) || '—']);
+  const note = clean(body.message, LIMITS.text);
+  if (note) fields.push(['Message', note]);
   fields.push(['OK to add to the WhatsApp community', body.community === true ? 'yes' : 'no'], ['Received', new Date().toISOString()]);
 
   const text = fields.map(([k, v]) => `${k}: ${v}`).join('\n');
