@@ -4,10 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Countdown } from '@/components/ui/Countdown';
-import { IconArrowUpRight, IconPause, IconPlay } from '@/components/ui/icons';
+import { IconArrowUpRight, IconMapPin, IconPause, IconPlay } from '@/components/ui/icons';
 import { CHURCH_ADDRESS, CHURCH_EMAIL, CHURCH_MAPS_URL, LIVE_URL, YOUTUBE_MUSIC_URL } from '@/lib/church';
 import { visitCta } from '@/lib/content';
-import { SPOTIFY_SHOW_EMBED_URL, SPOTIFY_SHOW_URL, latestEpisode } from '@/lib/episodes';
+import { SPOTIFY_SHOW_EMBED_URL, SPOTIFY_SHOW_URL, latestEpisode as fallbackEpisode, type Episode } from '@/lib/episodes';
 import { launchCopy } from '@/lib/launch';
 import { useAppStore } from '@/lib/store';
 import { chapterIndex } from '@/lib/world/chapters';
@@ -31,8 +31,31 @@ function Pill({ href, children }: { href: string; children: React.ReactNode }) {
 }
 
 /* ---------------------------------------------------------------- arrive */
+/* Newest episode: starts from the built-in entry, then swaps in whatever Spotify lists now. */
+let fetchedEpisode: Episode | null = null;
+function useLatestEpisode(): Episode {
+  const [ep, setEp] = useState<Episode>(fetchedEpisode ?? fallbackEpisode);
+  useEffect(() => {
+    if (fetchedEpisode) return;
+    let cancelled = false;
+    fetch('/api/latest-episode')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((e: Episode | null) => {
+        if (!e?.id) return;
+        fetchedEpisode = e;
+        if (!cancelled) setEp(e);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return ep;
+}
+
 /* Compact Spotify player for the hero: plays through the global player (so audio keeps going as you scroll). */
 function HeroPlayer() {
+  const latestEpisode = useLatestEpisode();
   const ref = useRef<HTMLButtonElement>(null);
   const current = useAppStore((s) => s.currentEpisode);
   const isPlaying = useAppStore((s) => s.isPlaying);
@@ -110,6 +133,10 @@ export function Arrive() {
           </div>
           <div className={`${styles.ctaRow} ${styles.rise}`}>
             <Pill href={cta.href}>{cta.label}</Pill>
+            <a className={styles.directions} href={CHURCH_MAPS_URL} target="_blank" rel="noopener noreferrer" data-cursor="Map">
+              <IconMapPin size={18} />
+              Get Directions
+            </a>
             <Link href="/visit" className={styles.link}>
               Everything to know before you come →
             </Link>
@@ -250,6 +277,7 @@ export function Fronts() {
 
 /* ---------------------------------------------------------------- listen */
 export function Listen() {
+  const latestEpisode = useLatestEpisode();
   const mounted = useWorldStore((s) => s.maxActive >= chapterIndex('listen') - 1);
   const current = useAppStore((s) => s.currentEpisode);
   const isPlaying = useAppStore((s) => s.isPlaying);
@@ -322,7 +350,13 @@ export function Begin() {
         <p className={styles.lead} style={{ margin: '18px 0 26px' }}>
           You don&apos;t have to. It just means someone will look out for you.
         </p>
-        <Pill href={cta.href}>{cta.label}</Pill>
+        <div className={styles.ctaRow}>
+          <Pill href={cta.href}>{cta.label}</Pill>
+          <a className={styles.directions} href={CHURCH_MAPS_URL} target="_blank" rel="noopener noreferrer" data-cursor="Map">
+            <IconMapPin size={18} />
+            Get Directions
+          </a>
+        </div>
       </div>
       <div className={styles.layer} style={vars({ '--delay': 0.5, '--depth': 14 })}>
         <div className={styles.contact}>

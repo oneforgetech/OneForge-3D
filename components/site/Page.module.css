@@ -663,3 +663,23 @@
     filter: none;
   }
 }
+
+.directions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin-top: 16px;
+  padding: 0 24px;
+  border-radius: 999px;
+  border: 1.5px solid var(--of-teal);
+  color: var(--of-teal);
+  font-weight: 700;
+  text-decoration: none;
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+.directions:hover {
+  background: var(--of-teal);
+  color: var(--of-forest-black);
+}

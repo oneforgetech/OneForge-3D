@@ -14,13 +14,13 @@ export const SPOTIFY_SHOW_EMBED_URL = `https://open.spotify.com/embed/show/${SPO
  * Latest episode of the OneForge show, taken from Spotify's public embed data.
  * Spotify only lists a show's full episode catalogue through its authenticated
  * Web API, so the up-to-date list is shown via the official show embed; this
- * single entry powers the hero's "Listen now" widget and should be refreshed
- * (or replaced by an API/RSS fetch) when a new episode is released.
+ * entry is only the fallback: the site fetches the newest episode itself
+ * (lib/spotifyLatest.ts, served at /api/latest-episode).
  */
 export const latestEpisode: Episode = {
-  id: '4XDglIp6EEynVwpj0TlnZW',
-  title: 'Get Better, Ep.2 | Know Your Work',
-  uri: 'spotify:episode:4XDglIp6EEynVwpj0TlnZW',
-  publishDate: 'Sep 18, 2026',
+  id: '3BAyad89Z1Et0uwXO4NQGE',
+  title: 'Deeper Than That, Ep.3 | Talk Back',
+  uri: 'spotify:episode:3BAyad89Z1Et0uwXO4NQGE',
+  publishDate: 'Oct 13, 2026',
   artworkUrl: 'https://image-cdn-ak.spotifycdn.com/image/ab6765630000ba8a3ccb16cea6dfd8b0adfd3611',
 };

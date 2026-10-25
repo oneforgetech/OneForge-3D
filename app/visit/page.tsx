@@ -3,7 +3,8 @@ import { PageHero, PageShell, Pill, Reveal, Section } from '@/components/site/Si
 import p from '@/components/site/Page.module.css';
 import { VISIT_BLOCKS } from '@/lib/content';
 import { SPOTIFY_SHOW_URL } from '@/lib/episodes';
-import { LIVE_URL } from '@/lib/church';
+import { IconMapPin } from '@/components/ui/icons';
+import { CHURCH_MAPS_URL, LIVE_URL } from '@/lib/church';
 import { connectHref } from '@/lib/connect';
 import { buildMetadata } from '@/lib/metadata';
 
@@ -35,7 +36,13 @@ export default function Page() {
               <div id={b.id} className={p.detail}>
                 <span className={p.label}>{b.label}</span>
                 <p>{b.body}</p>
-                {b.link && (
+                {b.link && b.id === 'location' && (
+                  <a className={p.directions} href={b.link.href} target="_blank" rel="noopener noreferrer">
+                    <IconMapPin size={18} />
+                    Get Directions
+                  </a>
+                )}
+                {b.link && b.id !== 'location' && (
                   <a className={p.link} href={b.link.href} target="_blank" rel="noreferrer">
                     {b.link.label}
                   </a>
@@ -64,6 +71,10 @@ export default function Page() {
           <p className={p.lead}>You don&apos;t have to. It just means someone will look out for you.</p>
           <div className={p.actions}>
             <Pill href={connectHref('visiting')}>I&apos;m planning to come</Pill>
+            <a className={p.directions} href={CHURCH_MAPS_URL} target="_blank" rel="noopener noreferrer">
+              <IconMapPin size={18} />
+              Get Directions
+            </a>
           </div>
         </Reveal>
       </Section>

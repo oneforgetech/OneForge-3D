@@ -1543,3 +1543,33 @@
     scroll-snap-type: none;
   }
 }
+
+/* "Get Directions": outlined pill beside the main call to action; opens Google Maps */
+.directions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 26px;
+  border-radius: 999px;
+  border: 1.5px solid var(--of-teal);
+  background: rgba(13, 43, 43, 0.55);
+  color: var(--of-teal);
+  font-weight: 700;
+  font-size: 17px;
+  text-decoration: none;
+  transition: transform var(--duration-fast) var(--ease-standard), background var(--duration-fast), color var(--duration-fast);
+}
+
+.directions:hover {
+  background: var(--of-teal);
+  color: var(--of-forest-black);
+}
+
+@media (max-width: 600px) {
+  .directions {
+    min-height: 52px;
+    padding: 0 22px;
+    font-size: 16px;
+  }
+}

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { CHURCH_ADDRESS, CHURCH_EMAIL, CHURCH_FORMAL_NAME, CHURCH_MAPS_URL, CHURCH_SUNDAY_TIME, LIVE_URL, SOCIAL_LINKS } from '@/lib/church';
+import { IconMapPin } from '@/components/ui/icons';
 import { SPOTIFY_SHOW_URL } from '@/lib/episodes';
 import { launchCopy } from '@/lib/launch';
 import { NAV_GROUPS, NAV_MORE } from '@/lib/nav';
@@ -29,8 +30,9 @@ export function Footer() {
             <span className={`${styles.label} kicker`}>Where</span>
             <strong className={styles.place}>Ogudu, Lagos</strong>
             <span className={styles.sub}>{CHURCH_ADDRESS}</span>
-            <a className={styles.subLink} href={CHURCH_MAPS_URL} target="_blank" rel="noreferrer">
-              Get directions ↗
+            <a className={styles.directions} href={CHURCH_MAPS_URL} target="_blank" rel="noopener noreferrer">
+              <IconMapPin size={16} />
+              Get Directions
             </a>
           </div>
         </div>

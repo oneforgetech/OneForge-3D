@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { IconMapPin } from '@/components/ui/icons';
+import { CHURCH_MAPS_URL } from '@/lib/church';
 import { useProgress } from '@/lib/useProgress';
 import { Reveal } from './Site';
 import a from './About.module.css';
@@ -172,9 +174,15 @@ export function Closing({ href }: { href: string }) {
           <p className={a.justCome}>Just come.</p>
           <div className={a.closeAction}>
             <p className={a.tag}>Forged to lead. Called to impact</p>
-            <Link href={href} className={a.cta} data-cursor="Go">
-              FIND YOUR PLACE →
-            </Link>
+            <div className={a.closeButtons}>
+              <Link href={href} className={a.cta} data-cursor="Go">
+                FIND YOUR PLACE →
+              </Link>
+              <a className={a.directions} href={CHURCH_MAPS_URL} target="_blank" rel="noopener noreferrer" data-cursor="Map">
+                <IconMapPin size={18} />
+                Get Directions
+              </a>
+            </div>
           </div>
         </Reveal>
       </div>
