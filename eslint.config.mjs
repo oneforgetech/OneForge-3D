@@ -13,6 +13,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "server.js", // cPanel/Passenger startup file (CommonJS)
   ]),
 ]);
 

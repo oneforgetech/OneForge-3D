@@ -1,5 +1,3 @@
-import type { NextConfig } from "next";
-
 const isDev = process.env.NODE_ENV !== 'production';
 
 // Inline scripts are needed (pre-paint script, JSON-LD, Next's own bootstrap), so 'unsafe-inline'
@@ -30,7 +28,8 @@ const SECURITY_HEADERS = [
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
 ];
 
-const nextConfig: NextConfig = {
+/** @type {import("next").NextConfig} */
+const nextConfig = {
   poweredByHeader: false,
   async headers() {
     // Only in production: the dev server, tunnels and LAN testing need to stay unrestricted.
