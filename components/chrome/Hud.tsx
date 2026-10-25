@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useMounted } from '@/lib/useMounted';
 import { NAV_GROUPS, type NavGroup } from '@/lib/nav';
 import { useWorldStore } from '@/lib/world/store';
 import { IconArrowUpRight } from '@/components/ui/icons';
@@ -42,7 +43,9 @@ function Group({ group, cta }: { group: NavGroup; cta?: boolean }) {
 export function Hud() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const home = pathname === '/';
+  // The server can't always know the path when it prerenders the shared layout, so the home-only
+  // bits appear after hydration instead of risking a server/client mismatch.
+  const home = useMounted() && pathname === '/';
   const goTo = useWorldStore((s) => s.goTo);
   const [discover, listen, visit] = NAV_GROUPS;
 
