@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Mono, Inter, Sora } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import { Cursor } from '@/components/chrome/Cursor';
 import { FireCursor } from '@/components/chrome/FireCursor';
 import { FloatingPlayer } from '@/components/chrome/FloatingPlayer';
@@ -83,6 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <FloatingPlayer />
         <FireCursor />
         <Cursor />
+        <Analytics />
       </body>
     </html>
   );
