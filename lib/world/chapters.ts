@@ -19,7 +19,7 @@ export type Chapter = {
   rests: number[];
 };
 
-const POSTER = '/images/hero-fire-poster.jpg';
+const POSTER = '/images/hero-forge-poster.jpg';
 
 export const CHAPTERS: Chapter[] = [
   { id: 'arrive', label: 'Arrive', caption: 'Arrive', contentVh: 90, portalVh: 60, bg: { src: POSTER, video: true, focus: [0.5, 0.5], placeholder: PLACEHOLDERS.poster }, dim: 0, rests: [0] },

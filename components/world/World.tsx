@@ -132,8 +132,8 @@ export function World() {
               >
                 {c.bg.video ? (
                   <video data-hero-video muted loop playsInline autoPlay preload="metadata" poster={c.bg.src}>
-                    <source src="/video/hero-fire.webm" type="video/webm" />
-                    <source src="/video/hero-fire.mp4" type="video/mp4" />
+                    <source src="/video/hero-forge.webm" type="video/webm" />
+                    <source src="/video/hero-forge.mp4" type="video/mp4" />
                   </video>
                 ) : i <= maxActive + 1 ? (
                   // Photos mount only for the section you're on and the one after it, so six
