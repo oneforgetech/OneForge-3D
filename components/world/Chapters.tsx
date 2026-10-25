@@ -309,14 +309,12 @@ export function Listen() {
           </span>
         </button>
         <div className={styles.listenLinks}>
-          <a className={styles.link} href={SPOTIFY_SHOW_URL} target="_blank" rel="noreferrer">
+          <a className={styles.ghost} href={SPOTIFY_SHOW_URL} target="_blank" rel="noreferrer" data-cursor="Open">
             Open in Spotify ↗
           </a>
           <a className={styles.ghost} href={YOUTUBE_MUSIC_URL} target="_blank" rel="noreferrer" data-cursor="Open">
             Open on YouTube Music ↗
           </a>
-        </div>
-        <div className={styles.liveRow}>
           <a className={styles.ghost} href={LIVE_URL} target="_blank" rel="noreferrer" data-cursor="Live">
             Join Us Live ↗
           </a>

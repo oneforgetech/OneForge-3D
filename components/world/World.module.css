@@ -663,7 +663,10 @@
 }
 
 .listenLinks {
-  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 @media (max-width: 700px) {
@@ -1339,10 +1342,6 @@
   .heroHead {
     font-size: clamp(34px, 20vh, 90px);
   }
-}
-
-.liveRow {
-  margin-top: 18px;
 }
 
 /* ======================================================================
