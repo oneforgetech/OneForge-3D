@@ -1,0 +1,266 @@
+.hud {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(clamp(14px, 2.4vh, 22px), env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right)) clamp(14px, 2.4vh, 22px) max(var(--gutter), env(safe-area-inset-left));
+  pointer-events: none;
+  text-shadow: 0 1px 14px rgba(13, 43, 43, 0.6);
+}
+
+.hud > * {
+  pointer-events: auto;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logoImg {
+  height: 58px;
+  width: auto;
+}
+
+.where {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.menuBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 46px;
+  padding: 0 22px 0 18px;
+  border-radius: 999px;
+  color: var(--of-mint-white);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.burger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.burger span {
+  width: 22px;
+  height: 2px;
+  background: currentColor;
+}
+
+.visit {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 5px 0 22px;
+  border-radius: 999px;
+  background: var(--of-orange);
+  color: var(--of-forest-black);
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  text-shadow: none;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.visitIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--of-forest-black);
+  color: var(--of-mint-white);
+}
+
+.progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform-origin: left;
+  transform: scaleX(var(--world-p, 0));
+  background: linear-gradient(90deg, var(--of-teal), var(--of-orange));
+  pointer-events: none;
+}
+
+/* soft scrim so inner-page content passing under the HUD stays out of the logo's way */
+.hud::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 -34px 0;
+  z-index: -1;
+  background: linear-gradient(to bottom, rgba(13, 43, 43, 0.82), rgba(13, 43, 43, 0));
+  pointer-events: none;
+}
+
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.right {
+  justify-content: flex-end;
+}
+
+.logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.side {
+  display: flex;
+}
+
+.group {
+  position: relative;
+  padding-bottom: 14px;
+  margin-bottom: -14px;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  height: 46px;
+  padding: 0 18px;
+  color: var(--of-mint-white);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.navLink:hover {
+  color: var(--of-teal);
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% - 6px);
+  left: 0;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: 20px;
+  background: rgba(8, 28, 28, 0.88);
+  text-shadow: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.98);
+  transform-origin: top left;
+  transition: opacity 0.25s var(--ease-standard), transform 0.35s var(--ease-standard), visibility 0s linear 0.25s;
+}
+
+.right .panel {
+  left: auto;
+  right: 0;
+  transform-origin: top right;
+}
+
+.group:hover .panel,
+.group:focus-within .panel {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.25s var(--ease-standard), transform 0.35s var(--ease-standard), visibility 0s;
+}
+
+.panel a {
+  padding: 11px 16px;
+  border-radius: 12px;
+  color: var(--of-mint-white);
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: 16px;
+}
+
+.panel a:hover {
+  background: rgba(232, 248, 245, 0.1);
+  color: var(--of-teal);
+}
+
+@media (max-width: 960px) {
+  .side {
+    display: none;
+  }
+  .logo {
+    position: static;
+    transform: none;
+    order: 0;
+    flex: none;
+  }
+  .left {
+    order: 1;
+    margin-left: auto;
+    flex: none;
+  }
+  .right {
+    order: 2;
+    flex: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .panel a {
+    padding: 14px 16px;
+  }
+}
+
+/* very short windows (landscape phones, 300–400% browser zoom): a slimmer header */
+@media (max-height: 380px) {
+  .hud {
+    padding-top: 8px;
+    padding-bottom: 6px;
+  }
+  .logoImg {
+    height: 34px;
+  }
+    .menuBtn,
+  .navLink,
+  .visit {
+    height: 34px;
+  }
+  .menuBtn {
+    padding: 0 14px 0 12px;
+    font-size: 12px;
+  }
+  .visit {
+    font-size: 13px;
+    padding-left: 14px;
+  }
+  .visitIcon {
+    width: 26px;
+    height: 26px;
+  }
+}

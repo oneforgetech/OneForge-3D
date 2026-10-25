@@ -1,0 +1,82 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.accountName {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px 14px 20px;
+  border-radius: 18px;
+}
+
+.fieldText {
+  display: flex;
+  flex-direction: column;
+}
+
+.bank {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.number {
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.copyButton {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--of-teal);
+  background: none;
+  color: var(--of-teal);
+  font-weight: 600;
+  font-size: 14px;
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+.copyButton:hover {
+  background: var(--of-teal);
+  color: var(--of-forest-black);
+}
+
+.copyButtonLight {
+  composes: copyButton;
+}
+
+@media (max-width: 700px) {
+  .field {
+    padding: 10px 12px 10px 16px;
+  }
+  .number {
+    font-size: 19px;
+  }
+  .accountName {
+    font-size: 17px;
+  }
+  .fields {
+    gap: 8px;
+  }
+}

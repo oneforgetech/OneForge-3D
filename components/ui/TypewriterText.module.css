@@ -1,0 +1,59 @@
+/* Short, single-line phrases only — the reveal is a fixed width, which
+   doesn't support wrapping. */
+.typewriter {
+  /* The cursor's border-right must not eat into the text's own width
+     budget (the global reset sets border-box everywhere else). The
+     revealed width is the text's own measured width (--char-width, set in
+     JS via scrollWidth) plus a small fixed gap for the cursor, rather than
+     an estimate from character count — `ch` is defined by the font's "0"
+     glyph and under-measures other characters, which was clipping the
+     last letter. */
+  box-sizing: content-box;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  font-family: var(--font-mono);
+}
+
+.typewriter.cursor {
+  border-right: 2px solid currentColor;
+}
+
+.typewriter.typing {
+  width: calc(var(--char-width) + 3px);
+  animation: of-type var(--type-duration) steps(var(--char-count), end) forwards;
+}
+
+.typewriter.typing.cursor {
+  animation:
+    of-type var(--type-duration) steps(var(--char-count), end) forwards,
+    of-caret-blink 0.8s step-end infinite;
+}
+
+@keyframes of-type {
+  from {
+    width: 0;
+  }
+  to {
+    width: calc(var(--char-width) + 3px);
+  }
+}
+
+@keyframes of-caret-blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typewriter,
+  .typewriter.typing,
+  .typewriter.typing.cursor {
+    width: auto;
+    animation: none;
+    border-right: none;
+  }
+}

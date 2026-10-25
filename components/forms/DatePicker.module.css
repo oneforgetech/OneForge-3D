@@ -1,0 +1,126 @@
+.root {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 1.5px solid var(--glass-border-on-dark);
+  background: rgba(232, 248, 245, 0.06);
+  color: var(--of-mint-white);
+  font-family: inherit;
+  font-size: 17px;
+  text-align: left;
+  transition: border-color var(--duration-fast) var(--ease-standard);
+}
+
+.trigger:hover {
+  border-color: var(--of-teal);
+}
+
+.trigger svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+}
+
+.placeholder {
+  opacity: 0.6;
+}
+
+/* Inline (in document flow) on purpose: a floating popover has no
+   collision logic and can cover the next form field. */
+.popover {
+  margin-top: 10px;
+  width: 100%;
+  max-width: 340px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(8, 28, 28, 0.92);
+  border: 1px solid var(--glass-border-on-dark);
+}
+
+.popoverHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.monthLabel {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border-on-dark);
+  background: none;
+  color: var(--of-mint-white);
+}
+
+.navButton:hover {
+  border-color: var(--of-teal);
+  color: var(--of-teal);
+}
+
+.weekdays {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.weekdays span {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  opacity: 0.7;
+}
+
+.grid {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  color: var(--of-mint-white);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.day:hover:not(:disabled) {
+  background: rgba(232, 248, 245, 0.14);
+}
+
+.day:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.day.selected {
+  background: var(--of-orange);
+  color: var(--of-forest-black);
+  font-weight: 700;
+}

@@ -1,0 +1,1545 @@
+/* The scroll world. One tall track, one sticky stage; the controller writes
+   --in / --out / --t on every chapter.
+   Everything here is declarative CSS reading those variables. */
+
+.track {
+  position: relative;
+  /* sum of every chapter (content + portal) in svh, plus the stage itself */
+  height: calc(var(--world-len, 1500) * 1svh + 100svh);
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--of-forest-black);
+  /* paged scroll: the page scrolls by stops, not by touch-drag (pinch-zoom still works) */
+  touch-action: pan-y pinch-zoom;
+  --dim: 0;
+  --flash: 0;
+}
+
+/* ---- persistent layers ---- */
+.bgs,
+.bg,
+.shade,
+.dimmer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bg {
+  opacity: 0;
+  --push: 1;
+  background-size: cover;
+  background-position: 50% 50%;
+}
+
+.bg:global(.is-on) {
+  opacity: 1;
+}
+
+.bg img,
+.bg video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  transform: scale(var(--push));
+  transform-origin: 50% 55%;
+}
+
+/* Must stay in step with drawShade() in lib/world/portal.ts. */
+.shade {
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(to top, rgba(13, 43, 43, 0.92) 0, transparent 52%),
+    linear-gradient(90deg, rgba(13, 43, 43, 0.55), transparent 35%),
+    linear-gradient(to bottom, rgba(13, 43, 43, 0.5), transparent min(160px, 22%));
+}
+
+.dimmer {
+  z-index: 2;
+  pointer-events: none;
+  /* heaviest where the copy sits (left), lighter where the picture can breathe (right).
+     lib/world/portal.ts mirrors this exactly so the portal hand-over has no seam. */
+  background: linear-gradient(
+    90deg,
+    rgba(13, 43, 43, calc(var(--dim) * 1.15)) 0%,
+    rgba(13, 43, 43, calc(var(--dim) * 0.95)) 55%,
+    rgba(13, 43, 43, calc(var(--dim) * 0.55)) 100%
+  );
+}
+
+@media (max-width: 900px) {
+  .dimmer {
+    background: rgba(13, 43, 43, calc(var(--dim) * 0.86));
+  }
+}
+
+.portalCanvas,
+.embers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+
+.portalCanvas {
+  z-index: 3;
+}
+
+.embers {
+  z-index: 4;
+}
+
+.flash {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: var(--flash);
+  background: radial-gradient(circle at 50% 50%, rgba(255, 140, 0, 0.6), rgba(255, 140, 0, 0) 62%);
+}
+
+/* ---- the 3D scene ---- */
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  perspective: 1100px;
+  perspective-origin: 50% 42%;
+}
+
+.chapter {
+  --in: 1;
+  --out: 0;
+  --t: 1;
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  padding: var(--top-pad, 118px) var(--gutter) clamp(18px, 3.5vh, 44px) var(--pad-left, var(--gutter));
+  display: flex;
+  flex-direction: column;
+}
+
+/* Until the scroll engine has taken over (it sets visibility inline on every
+   chapter, on its first frame) nothing in the scene may show: otherwise all
+   seven chapters are drawn on top of each other while the page is still loading. */
+:global(html[data-world-live]) .chapter {
+  visibility: hidden;
+}
+
+/* Every moving piece of content is a .layer: it flies in from depth, drifts
+   with the pointer at its own --depth, and flies past the camera on exit. */
+.layer {
+  --li: clamp(0, calc((var(--in) - var(--delay, 0) * 0.45) / (1 - var(--delay, 0) * 0.45)), 1);
+  /* scroll-driven only: content never reacts to the mouse, so nothing wobbles */
+  transform: translate3d(0, 0, calc((1 - var(--li)) * -540px + var(--out) * 340px));
+  opacity: calc(var(--li) * (1 - var(--out)));
+  filter: blur(calc((1 - var(--li)) * 12px + var(--out) * 10px));
+  will-change: transform, opacity;
+}
+
+.h2 {
+  font-size: clamp(36px, 5.4vw, 88px);
+  line-height: 1;
+}
+
+.lead {
+  max-width: 640px;
+  font-size: clamp(17px, 1.5vw, 21px);
+  opacity: 0.92;
+}
+
+.kick {
+  display: block;
+  margin-bottom: 16px;
+  color: var(--of-teal);
+  opacity: 1;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 7px 7px 28px;
+  border-radius: 999px;
+  background: var(--of-orange);
+  color: var(--of-forest-black);
+  font-weight: 700;
+  font-size: 18px;
+  text-decoration: none;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.pillIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--of-forest-black);
+  color: var(--of-mint-white);
+}
+
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border-on-dark);
+  color: var(--of-mint-white);
+  text-decoration: none;
+}
+
+.ghost:hover {
+  border-color: var(--of-teal);
+  color: var(--of-teal);
+}
+
+.link {
+  color: var(--of-teal);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* ---- portal UI (caption + hit area; the window itself is canvas) ---- */
+.portalUI {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  top: 50%;
+  width: min(320px, 31vw, 34svh);
+  transform: translate(-50%, -54%);
+  pointer-events: none;
+}
+
+.caption {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 16px;
+  white-space: nowrap;
+  text-shadow: 0 1px 14px rgba(13, 43, 43, 0.7);
+  opacity: 0;
+  transform: translateY(12px);
+  filter: blur(6px);
+  transition: opacity 0.5s var(--ease-standard), transform 0.6s var(--ease-standard), filter 0.5s var(--ease-standard);
+}
+
+.caption strong {
+  font-size: 18px;
+}
+
+.portalBtn {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 320 / 350;
+  padding: 0;
+  border: 0;
+  border-radius: 28%;
+  background: transparent;
+  pointer-events: none;
+}
+
+.stage[data-portal='on'] .caption {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+.stage[data-portal='on'] .portalBtn {
+  pointer-events: auto;
+}
+
+/* ---- arrive ---- */
+.arrive {
+  justify-content: flex-end;
+}
+
+.arriveRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 40px;
+}
+
+.titleCol {
+  flex: 1;
+  min-width: 0;
+}
+
+.tagline {
+  max-width: 30ch;
+  margin-bottom: 14px;
+  font-size: clamp(17px, 1.7vw, 22px);
+  line-height: 1.45;
+  opacity: 0.92;
+}
+
+.dateLine {
+  display: block;
+  margin: 0 0 14px;
+  color: var(--of-teal);
+  font-size: clamp(14px, 1.7vw, 22px);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.title {
+  margin: 0 0 -0.04em -0.04em;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fit, clamp(56px, 12vw, 200px));
+  line-height: 0.8;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+
+.fitText {
+  display: inline-block;
+}
+
+.heroSide {
+  width: min(400px, 28vw);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* intro (arrive reveals once the preloader releases) */
+:global(html[data-world-live]) :global(body:not(.world-intro)) .rise,
+:global(html[data-world-live]) :global(body:not(.world-intro)) .scrollHint {
+  opacity: 0;
+}
+
+:global(body.world-intro) .titleRise {
+  animation: title-rise 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.05s backwards;
+}
+
+:global(body.world-intro) .factRise > * {
+  animation: fact-rise 0.55s var(--ease-standard) backwards;
+}
+
+:global(body.world-intro) .factRise > *:nth-child(1) {
+  animation-delay: 0.2s;
+}
+:global(body.world-intro) .factRise > *:nth-child(2) {
+  animation-delay: 0.28s;
+}
+:global(body.world-intro) .factRise > *:nth-child(3) {
+  animation-delay: 0.36s;
+}
+:global(body.world-intro) .factRise > *:nth-child(4) {
+  animation-delay: 0.44s;
+}
+
+:global(body.world-intro) .scrollHint {
+  animation: fact-rise 0.7s var(--ease-standard) 0.7s backwards;
+}
+
+@keyframes title-rise {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(42px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+@keyframes fact-rise {
+  from {
+    opacity: 0;
+    filter: blur(7px);
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+/* ---- sunday ---- */
+.sunday {
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.sub {
+  display: block;
+  margin: 14px 0 18px;
+  color: var(--of-teal);
+  font-size: clamp(15px, 1.8vw, 24px);
+}
+
+.countdown {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 78px;
+  padding: 10px 12px;
+  border-radius: 16px;
+}
+
+.unitNum {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.unitLabel {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.ctaRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+}
+
+/* ---- whole ---- */
+
+.word {
+  --w: clamp(0, calc((var(--t) - 0.04) / 0.42 * var(--n) - var(--i)), 1);
+  display: inline-block;
+  margin-right: 0.22em;
+  opacity: calc(0.14 + var(--w) * 0.86);
+  transform: translate3d(0, calc((1 - var(--w)) * 0.35em), calc((1 - var(--w)) * -140px)) rotateX(calc((1 - var(--w)) * 40deg));
+  transform-origin: 50% 100%;
+}
+
+/* ---- the making (tunnel) ---- */
+
+/* ---- listen ---- */
+.listen,
+.give {
+  justify-content: center;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(24px, 5vw, 80px);
+  align-items: center;
+}
+
+.embed {
+  padding: 14px;
+  border-radius: 26px;
+  min-height: 380px;
+}
+
+.embed iframe {
+  display: block;
+  width: 100%;
+  height: 352px;
+  border: 0;
+  border-radius: 14px;
+}
+
+.latest {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 22px;
+  padding: 10px 22px 10px 10px;
+  border-radius: 999px;
+  color: inherit;
+  text-align: left;
+}
+
+.latestThumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.latestPlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13, 43, 43, 0.5);
+}
+
+.latestText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.latestText strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+}
+
+/* ---- give ---- */
+
+/* ---- begin ---- */
+.begin {
+  justify-content: center;
+  gap: 28px;
+}
+
+.beginHead {
+  max-width: 980px;
+}
+
+.beginHead .h2 {
+  font-size: clamp(44px, 8vw, 132px);
+}
+
+.contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+.contact a {
+  text-decoration: none;
+}
+
+.contact a:hover {
+  color: var(--of-teal);
+}
+
+/* ---- responsive ---- */
+@media (min-width: 1180px) {
+  .chapter {
+    --pad-left: 200px;
+  }
+  .arrive {
+    --pad-left: clamp(28px, 4vw, 58px);
+  }
+}
+
+@media (max-width: 1040px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .portalUI {
+    width: min(300px, 48vw, 34svh);
+  }
+}
+
+@media (max-width: 700px) {
+  .chapter {
+    --top-pad: 104px;
+    padding: var(--top-pad) 34px 18px 18px;
+    --pad-left: 18px;
+  }
+  .arriveRow {
+    display: block;
+  }
+  .titleCol {
+    margin-bottom: 16px;
+  }
+  .dateLine {
+    font-size: 13px;
+  }
+  .portalUI {
+    top: 42%;
+    width: min(240px, 60vw, 30svh);
+  }
+  .caption {
+    font-size: 14px;
+  }
+  .caption strong {
+    font-size: 16px;
+  }
+
+  .unit {
+    min-width: 62px;
+    padding: 8px;
+  }
+  .unitNum {
+    font-size: 22px;
+  }
+  .sub {
+    margin: 8px 0 12px;
+  }
+
+  .embed {
+    min-height: 0;
+    padding: 8px;
+  }
+  .embed iframe {
+    height: 232px;
+  }
+  .contact {
+    font-size: 13px;
+  }
+}
+
+/* ---- static mode: reduced motion / no JS. A tall, normal, readable page. ---- */
+:global(html:not([data-world-live])) .track {
+  height: auto;
+}
+
+:global(html:not([data-world-live])) .stage {
+  position: relative;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+  background: linear-gradient(180deg, #0d2b2b, #091f24 50%, #0d2b2b);
+}
+
+:global(html:not([data-world-live])) .bgs,
+:global(html:not([data-world-live])) .shade,
+:global(html:not([data-world-live])) .dimmer,
+:global(html:not([data-world-live])) .portalCanvas,
+:global(html:not([data-world-live])) .embers,
+:global(html:not([data-world-live])) .flash,
+:global(html:not([data-world-live])) .portalUI,
+:global(html:not([data-world-live])) .scrollHint {
+  display: none;
+}
+
+:global(html:not([data-world-live])) .scene {
+  position: relative;
+  perspective: none;
+}
+
+:global(html:not([data-world-live])) .chapter {
+  position: relative;
+  min-height: 100svh;
+  padding-top: 130px;
+  padding-bottom: 80px;
+  gap: 28px;
+  justify-content: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caption,
+  .tilt,
+  .dimmer {
+    transition-duration: 0.01ms;
+  }
+}
+
+.listenLinks {
+  margin-top: 14px;
+}
+
+@media (max-width: 700px) {
+  .listen .lead {
+    display: none;
+  }
+}
+
+.heroPlayer {
+  width: 100%;
+  margin-top: 0;
+  border-radius: 22px;
+}
+
+.heroProgress {
+  display: block;
+  width: 100%;
+  height: 3px;
+  margin-top: 6px;
+  background: rgba(232, 248, 245, 0.25);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.heroProgress span {
+  display: block;
+  height: 100%;
+  background: var(--of-teal);
+}
+
+@media (max-width: 860px) {
+  .heroSide {
+    width: 43vw;
+  }
+}
+
+@media (max-width: 700px) {
+  .heroSide {
+    width: 100%;
+    gap: 8px;
+  }
+  .heroPlayer {
+    padding: 8px 14px 8px 8px;
+  }
+  .heroPlayer .latestThumb {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ======================================================================
+   Fit-to-screen. Every chapter must sit inside the stage on any device, so
+   type scales with viewport height as well as width, and secondary copy
+   steps aside as the screen gets shorter (it all lives on the inner pages).
+   ====================================================================== */
+.h2 {
+  font-size: clamp(34px, min(5.4vw, 9vh), 88px);
+}
+.beginHead .h2 {
+  font-size: clamp(40px, min(8vw, 12.5vh), 132px);
+}
+
+/* Movement names fit their own column: "Commissioned" and "Drawn" both fill it. */
+
+.split {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.embed iframe {
+  height: clamp(152px, 46vh, 352px);
+}
+.embed {
+  min-height: 0;
+}
+
+/* laptops and shorter: 720 – 860px tall */
+@media (max-height: 860px) {
+  .chapter {
+    --top-pad: 104px;
+  }
+  .lead {
+    font-size: clamp(16px, 1.3vw, 19px);
+  }
+  .sub {
+    margin: 8px 0 12px;
+  }
+  .unit {
+    min-width: 66px;
+    padding: 8px 10px;
+  }
+  .unitNum {
+    font-size: 24px;
+  }
+  .latest {
+    margin-top: 14px;
+  }
+}
+
+/* short screens: small laptops and small phones, 700px tall and below */
+@media (max-height: 700px) {
+  .wholeBody,
+  .front p,
+  .slabText,
+  .tiles span,
+  .contact {
+    display: none;
+  }
+  .listen .lead {
+    display: none;
+  }
+  .portalUI {
+    width: min(300px, 31vw, 32svh);
+  }
+}
+
+/* phones in portrait: panels trimmed to what fits */
+@media (max-width: 700px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 700px) and (max-height: 640px) {
+  .heroPlayer,
+  .portalUI {
+    top: 38%;
+    width: min(200px, 52vw, 28svh);
+  }
+  .countdown {
+    display: none;
+  }
+  .latestText .kicker {
+    display: none;
+  }
+}
+
+/* landscape phones and any very short window */
+@media (max-height: 520px) {
+  .chapter {
+    --top-pad: 78px;
+    padding-bottom: 12px;
+    padding-right: var(--gutter);
+  }
+  .heroSide,
+  .scrollHint,
+  .countdown,
+  .lead,
+  .wholeBody,
+  .front p,
+  .forged,
+  .slabText,
+  .cardFacts,
+  .tiles,
+  .contact,
+  .oneRoom > span:not(.kicker),
+  .listenLinks {
+    display: none;
+  }
+  .portalUI {
+    top: 47%;
+    width: min(220px, 34svh);
+  }
+  .sundayHead .h2,
+  .beginHead .h2 {
+    font-size: clamp(30px, 13vh, 64px);
+  }
+  .sub {
+    margin: 4px 0;
+    font-size: 15px;
+  }
+  .embed iframe {
+    height: 152px;
+  }
+  .split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+  }
+  .latest {
+    margin-top: 8px;
+  }
+}
+
+@media (pointer: coarse) {
+  .link,
+  .slabLink,
+  .fact a,
+  .ghost {
+    min-height: 44px;
+  }
+}
+
+/* second pass, from the device audit */
+@media (max-width: 700px) {
+  .embed iframe {
+    height: clamp(152px, 28vh, 232px);
+  }
+}
+
+/* on phones the embed would swallow swipes meant for paging; the latest-episode card and link do its job */
+@media (max-width: 700px) {
+  .embed {
+    display: none;
+  }
+}
+
+@media (max-height: 520px) {
+  .chapter {
+    --top-pad: 90px;
+  }
+}
+
+@media (max-width: 374px) {
+  .dateLine {
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+}
+
+/* at the end of the world (footer boundary) touch scrolling is native again */
+.stage[data-native] {
+  touch-action: auto;
+}
+
+/* ======================================================================
+   "Divided" / "The feeling" / "Whole on three fronts"
+   Big uppercase statements, revealed word by word as you move between stops.
+   ====================================================================== */
+.divided,
+.feeling,
+.fronts {
+  justify-content: center;
+  gap: clamp(14px, 3.2vh, 38px);
+}
+
+.shout {
+  max-width: 1120px;
+  font-size: clamp(30px, min(6.6vw, 10.5vh), 118px);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+}
+
+.shoutA .word {
+  --w: clamp(0, calc((var(--t) - 0.03) / 0.3 * var(--n) - var(--i)), 1);
+}
+
+.shoutB {
+  font-size: clamp(36px, min(8.6vw, 14vh), 150px);
+}
+
+.shoutB .word {
+  --w: clamp(0, calc((var(--t) - 0.02) / 0.2 * var(--n) - var(--i)), 1);
+}
+
+.shoutC {
+  font-size: clamp(28px, min(5vw, 8.4vh), 84px);
+}
+
+/* divided: Faith. Work. Ambition. Character... → "never meant to compete" → the answer */
+.keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.55em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, min(3.2vw, 5vh), 46px);
+  color: var(--of-teal);
+}
+
+.keywords span {
+  --k: clamp(0, calc((var(--t) - 0.24 - var(--i) * 0.03) / 0.08), 1);
+  display: inline-block;
+  opacity: var(--k);
+  transform: translateY(calc((1 - var(--k)) * 18px));
+}
+
+.compete {
+  --c: clamp(0, calc((var(--t) - 0.52) / 0.1), 1);
+  margin-top: clamp(8px, 2vh, 22px);
+  font-size: clamp(20px, min(2.4vw, 4vh), 34px);
+  opacity: var(--c);
+  transform: translateY(calc((1 - var(--c)) * 16px));
+}
+
+.resolve {
+  --g: clamp(0, calc((var(--t) - 0.64) / 0.12), 1);
+  margin-top: clamp(14px, 3vh, 34px);
+  max-width: 24ch;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(24px, min(3.4vw, 5.6vh), 50px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--of-orange);
+  opacity: var(--g);
+  transform: translateY(calc((1 - var(--g)) * 20px));
+}
+
+/* feeling: two versions of you pull apart, then the question brings them together */
+.versions {
+  --off: 5vw;
+  --m: clamp(0, calc((var(--t) - 0.6) / 0.2), 1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, min(3.4vw, 5.6vh), 52px);
+  line-height: 1.1;
+}
+
+.verA,
+.verB {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.verA {
+  --a: clamp(0, calc((var(--t) - 0.18) / 0.1), 1);
+  opacity: calc(var(--a) * (1 - 0.4 * var(--m)));
+  transform: translateX(calc((1 - var(--m)) * var(--off) * -1));
+}
+
+.verB {
+  --a: clamp(0, calc((var(--t) - 0.26) / 0.1), 1);
+  color: var(--of-teal);
+  opacity: calc(var(--a) * (1 - 0.4 * var(--m)));
+  transform: translateX(calc((1 - var(--m)) * var(--off)));
+}
+
+.question {
+  --q: clamp(0, calc((var(--t) - 0.6) / 0.12), 1);
+  margin-top: clamp(14px, 3.4vh, 38px);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(30px, min(5vw, 8.4vh), 80px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--of-orange);
+  opacity: var(--q);
+  transform: translateY(calc((1 - var(--q)) * 22px));
+}
+
+/* fronts: pillars, then the closing words and the button */
+.beats {
+  display: grid;
+  align-items: center;
+}
+
+.beats > .layer {
+  grid-area: 1 / 1;
+}
+
+.beat {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 3vh, 34px);
+  will-change: transform, opacity;
+}
+
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.pillar {
+  padding: clamp(14px, 2.6vh, 26px) 22px;
+  border-radius: 22px;
+  border-top: 3px solid var(--of-teal);
+}
+
+.pillarName {
+  font-size: clamp(20px, min(2.2vw, 3.8vh), 30px);
+  letter-spacing: 0.02em;
+}
+
+.pillar p {
+  margin-top: 8px;
+  font-size: clamp(15px, 1.25vw, 18px);
+  line-height: 1.5;
+}
+
+.carry {
+  max-width: 30ch;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, min(2.9vw, 5vh), 44px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.fire {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(26px, min(4.2vw, 7vh), 66px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--of-teal);
+}
+
+.startCta {
+  align-self: flex-start;
+  padding: 16px 36px;
+  border-radius: 999px;
+  background: var(--of-orange);
+  color: var(--of-forest-black);
+  font-weight: 700;
+  font-size: 19px;
+  text-decoration: none;
+  text-shadow: none;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+@media (max-width: 1040px) {
+  .pillars {
+    gap: 10px;
+  }
+  .pillar {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .pillars {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .pillar {
+    padding: 12px 16px;
+    border-radius: 18px;
+  }
+  .pillar p {
+    font-size: 14px;
+    margin-top: 4px;
+  }
+  .shout {
+    font-size: clamp(28px, min(9vw, 9.5vh), 64px);
+  }
+  .shoutB {
+    font-size: clamp(34px, min(12vw, 12vh), 84px);
+  }
+  .shoutC {
+    font-size: clamp(26px, min(8.4vw, 8vh), 56px);
+  }
+  .startCta {
+    padding: 14px 30px;
+  }
+}
+
+@media (max-height: 520px) {
+  .pillars {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .pillar {
+    padding: 8px 12px;
+  }
+  .pillar p {
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .pillarName {
+    font-size: 15px;
+  }
+  .keywords {
+    font-size: clamp(18px, 8vh, 30px);
+  }
+  .compete,
+  .resolve {
+    margin-top: 6px;
+  }
+}
+
+/* static mode (reduced motion / no JS): everything simply reads top to bottom */
+:global(html:not([data-world-live])) .beats {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+:global(html:not([data-world-live])) .beats > .layer {
+  grid-area: auto;
+}
+
+/* real spaces now sit between the words, so no extra margin */
+.shout .word {
+  margin-right: 0;
+}
+
+/* the two "versions" pull apart only as far as the page's side padding allows */
+@media (max-width: 1179px) {
+  .versions {
+    --off: 14px;
+  }
+}
+
+/* ======================================================================
+   Extreme zoom / tiny windows (300–400% browser zoom is about 320×256 CSS px).
+   Type is sized from the window's height so nothing can spill off the stage.
+   ====================================================================== */
+@media (max-height: 380px) {
+  .chapter {
+    --top-pad: 56px;
+    padding-bottom: 8px;
+    gap: 6px;
+  }
+  .portalUI {
+    top: 43%;
+    width: min(160px, 30svh);
+  }
+  .dateLine {
+    font-size: clamp(9px, 5vh, 14px);
+    margin-bottom: 4px;
+  }
+  .shout {
+    font-size: clamp(14px, 10vh, 40px);
+  }
+  .shoutB {
+    font-size: clamp(16px, 13vh, 56px);
+  }
+  .shoutC {
+    font-size: clamp(14px, 8.4vh, 34px);
+  }
+  .keywords {
+    font-size: clamp(11px, 6.4vh, 22px);
+  }
+  .compete {
+    font-size: clamp(10px, 5vh, 17px);
+    margin-top: 2px;
+  }
+  .resolve {
+    font-size: clamp(12px, 6.4vh, 24px);
+    margin-top: 4px;
+  }
+  .versions {
+    font-size: clamp(11px, 6.6vh, 24px);
+  }
+  .question {
+    font-size: clamp(14px, 9vh, 36px);
+    margin-top: 4px;
+  }
+  .carry {
+    font-size: clamp(11px, 6vh, 22px);
+  }
+  .fire {
+    font-size: clamp(14px, 9vh, 34px);
+  }
+  .startCta {
+    padding: 8px 18px;
+    font-size: 14px;
+  }
+  .pillar {
+    padding: 5px 8px;
+  }
+  .pillarName {
+    font-size: clamp(10px, 5vh, 14px);
+  }
+  .pillar p {
+    font-size: clamp(9px, 4vh, 12px);
+    margin-top: 1px;
+  }
+  .sundayHead .h2,
+  .beginHead .h2,
+  .h2 {
+    font-size: clamp(16px, 11vh, 44px);
+  }
+  .sub {
+    font-size: clamp(10px, 5vh, 15px);
+    margin: 2px 0;
+  }
+  .pill {
+    padding: 4px 4px 4px 16px;
+    font-size: 14px;
+  }
+  .pillIcon {
+    width: 28px;
+    height: 28px;
+  }
+  .latest,
+  .listenLinks {
+    display: none;
+  }
+  .ghost {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+}
+
+/* phones: keep each photo's subject in frame instead of cropping from the centre */
+@media (max-aspect-ratio: 1/1) {
+  .bg img,
+  .bg video {
+    object-position: var(--fx, 50%) var(--fy, 50%);
+  }
+}
+
+/* ======================================================================
+   Hero: the date, the first Sunday, the countdown, the way in.
+   ====================================================================== */
+.heroMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.heroMeta {
+  margin: 0 0 clamp(8px, 1.6vh, 18px);
+  font-family: var(--font-mono);
+  font-size: clamp(13px, 1.25vw, 18px);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--of-teal);
+}
+
+.heroHead {
+  margin: 0 0 0 -0.04em;
+  font-size: clamp(54px, min(11.5vw, 19vh), 200px);
+  line-height: 0.88;
+  letter-spacing: -0.055em;
+  white-space: nowrap;
+}
+
+.heroHead sup {
+  font-size: 0.34em;
+  vertical-align: top;
+  position: relative;
+  top: 0.18em;
+  margin-left: 0.04em;
+  letter-spacing: 0;
+}
+
+.heroSub {
+  margin: clamp(12px, 2.4vh, 26px) 0 0;
+  font-size: clamp(18px, 1.9vw, 28px);
+  line-height: 1.2;
+  opacity: 0.95;
+}
+
+.heroCount {
+  margin-top: clamp(14px, 2.6vh, 28px);
+}
+
+.heroMain .ctaRow {
+  margin-top: clamp(16px, 3vh, 32px);
+}
+
+@media (max-width: 700px) {
+  .heroHead {
+    font-size: clamp(46px, 15.5vw, 96px);
+  }
+  .heroMeta {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+  .heroSub {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 700px) and (max-height: 700px) {
+  .heroCount {
+    display: none;
+  }
+}
+
+@media (max-height: 520px) {
+  .heroCount,
+  .heroSub {
+    display: none;
+  }
+  .heroHead {
+    font-size: clamp(34px, 20vh, 90px);
+  }
+}
+
+.liveRow {
+  margin-top: 18px;
+}
+
+/* ======================================================================
+   Hero, centred: the date, the first Sunday, the countdown and the way in sit in
+   the middle of the screen; the Listen card keeps the lower-right corner.
+   ====================================================================== */
+.arrive {
+  justify-content: center;
+  padding-bottom: var(--top-pad, 118px);
+}
+
+.heroCentre {
+  width: 100%;
+}
+
+.heroMain {
+  flex: none;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: center;
+  text-align: center;
+}
+
+.heroHead {
+  margin: 0;
+  font-size: clamp(50px, min(10.5vw, 16.5vh), 180px);
+}
+
+.heroHead sup {
+  margin-left: 0.06em;
+}
+
+.heroCount .countdown {
+  justify-content: center;
+  gap: clamp(10px, 1.2vw, 18px);
+  margin-bottom: 0;
+}
+
+/* a bigger countdown */
+.heroCount .unit {
+  min-width: clamp(86px, 7.6vw, 124px);
+  padding: clamp(12px, 1.5vh, 18px) 16px;
+  border-radius: 22px;
+}
+
+.heroCount .unitNum {
+  font-size: clamp(36px, 3.8vw, 60px);
+}
+
+.heroCount .unitLabel {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.heroMain .ctaRow {
+  justify-content: center;
+}
+
+.heroCorner {
+  position: absolute;
+  right: var(--gutter);
+  bottom: clamp(22px, 4.5vh, 48px);
+  width: min(400px, 28vw);
+}
+
+@media (max-width: 860px) {
+  .heroCorner {
+    width: min(420px, 46vw);
+  }
+}
+
+@media (max-width: 700px) {
+  .heroHead {
+    font-size: clamp(44px, 15vw, 92px);
+  }
+  .heroCount .countdown {
+    gap: 8px;
+  }
+  .heroCount .unit {
+    min-width: min(72px, 19.5vw);
+    padding: 10px 8px;
+    border-radius: 16px;
+  }
+  .heroCount .unitNum {
+    font-size: clamp(26px, 8vw, 34px);
+  }
+  .heroCount .unitLabel {
+    font-size: 10px;
+  }
+  .heroMain .ctaRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .heroCorner {
+    left: 18px;
+    right: 18px;
+    bottom: 18px;
+    width: auto;
+  }
+}
+
+/* the countdown only steps aside on genuinely short phones */
+@media (max-width: 700px) and (max-height: 700px) {
+  .heroCount {
+    display: block;
+  }
+}
+
+@media (max-height: 620px) {
+  .heroCount {
+    display: none;
+  }
+}
+
+@media (max-height: 520px) {
+  .heroCorner {
+    display: none;
+  }
+  .arrive {
+    padding-bottom: 12px;
+  }
+}
+
+.heroMain {
+  text-shadow: 0 2px 20px rgba(13, 43, 43, 0.7);
+}
+
+.heroMain .glass-on-dark,
+.heroMain .pill {
+  text-shadow: none;
+}
+
+@media (max-width: 700px) {
+  .heroMain .ctaRow .link {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .bg {
+    background-position: var(--fx, 50%) var(--fy, 50%);
+  }
+}
+
+/* Plain mode (reduced motion, no JS, or slow to start): keep the first photograph behind the page,
+   so it never falls back to a flat dark screen. */
+:global(html:not([data-world-live])) .stage {
+  background: transparent;
+}
+
+:global(html:not([data-world-live])) .bgs {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+:global(html:not([data-world-live])) .bgs > div:first-child {
+  opacity: 1;
+}
+
+:global(html:not([data-world-live])) .dimmer {
+  display: block;
+  position: fixed;
+  inset: 0;
+  --dim: 0.55;
+  z-index: 0;
+}
+
+:global(html:not([data-world-live])) .shade {
+  display: none;
+}
+
+/* ---- plain mode (slow to start, no JS, reduced motion): the page still snaps section to section.
+   Pure CSS, so it works before a single line of the page's code has arrived. ---- */
+:global(html:not([data-world-live]):has([data-trail-host='5'])) {
+  scroll-snap-type: y mandatory;
+}
+
+:global(html:not([data-world-live])) [data-trail-host='5'] section[aria-label],
+:global(html:not([data-world-live]):has([data-trail-host='5'])) footer {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(html:not([data-world-live]):has([data-trail-host='5'])) {
+    scroll-snap-type: y proximity;
+  }
+}
+
+/* plain mode on touch screens: the page's own swipe pager (app/layout.tsx) handles sections, because
+   the browser's snap alone drops short swipes back and lets hard ones skip ahead */
+@media (pointer: coarse) and (prefers-reduced-motion: no-preference) {
+  :global(html:not([data-world-live]):has([data-trail-host='5'])) {
+    scroll-snap-type: none;
+  }
+}

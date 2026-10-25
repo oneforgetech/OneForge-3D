@@ -1,0 +1,75 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.root.on {
+  opacity: 1;
+}
+
+.ring,
+.dot,
+.label {
+  position: fixed;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+
+.ring {
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border-radius: 50%;
+  border: 1px solid var(--of-mint-white);
+  background: rgba(232, 248, 245, 0.12);
+  transition: width 0.3s var(--ease-standard), height 0.3s var(--ease-standard), margin 0.3s var(--ease-standard), background 0.3s, border-color 0.3s;
+}
+
+.hot .ring {
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  background: rgba(232, 248, 245, 0.2);
+}
+
+.labelled .ring {
+  width: 84px;
+  height: 84px;
+  margin: -42px 0 0 -42px;
+  border-color: var(--of-orange);
+  background: rgba(255, 140, 0, 0.18);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--of-mint-white);
+}
+
+.labelled .dot {
+  opacity: 0;
+}
+
+/* the label sits centred in the swollen ring */
+.label {
+  margin: -9px 0 0 0;
+  width: 84px;
+  margin-left: -42px;
+  text-align: center;
+  font: 600 12px/18px var(--font-body);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.labelled .label {
+  opacity: 1;
+}

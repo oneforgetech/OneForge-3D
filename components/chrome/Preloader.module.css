@@ -1,0 +1,107 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  overflow: hidden;
+  cursor: pointer;
+  background: rgba(13, 43, 43, calc(1 - var(--p, 0) * 0.6));
+  transition: opacity 0.45s var(--ease-standard);
+}
+
+.overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  background: url('/brand/flames.svg') center / cover no-repeat;
+}
+
+.overlay.fading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+:global(html[data-world-seen]) .overlay,
+:global(html[data-world-seen]) .logo,
+:global(html[data-world-seen]) .count,
+:global(html[data-world-seen]) .skip {
+  display: none;
+}
+
+.logo {
+  position: fixed;
+  z-index: 160;
+  left: 50%;
+  top: 50%;
+  width: 150px;
+  height: 120px;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  pointer-events: none;
+  will-change: left, top, width, height;
+  transition:
+    left 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    top 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    width 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.25s ease;
+}
+
+.logoGone {
+  opacity: 0;
+}
+
+.count {
+  position: fixed;
+  z-index: 161;
+  left: 50%;
+  bottom: clamp(22px, 3.1vh, 28px);
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  transform: translateX(-50%);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.value {
+  font-size: 64px;
+  font-weight: 200;
+}
+
+.percent {
+  padding-bottom: 4px;
+  font-size: 24px;
+}
+
+.leaving {
+  animation: count-out 0.45s var(--ease-standard) both;
+}
+
+.skip {
+  position: fixed;
+  z-index: 161;
+  right: var(--gutter);
+  bottom: clamp(22px, 3.1vh, 28px);
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--of-mint-white);
+}
+
+@keyframes count-out {
+  to {
+    opacity: 0;
+    filter: blur(7px);
+    transform: translate(-50%, -34px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .logo,
+  .leaving {
+    transition-duration: 0.01ms;
+    animation: none;
+  }
+}
