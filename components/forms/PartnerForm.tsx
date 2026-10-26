@@ -14,7 +14,6 @@ export function PartnerForm({ className }: { className?: string }) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [gift, setGift] = useState(PARTNER_GIFT_OPTIONS[0].value);
-  const [updates, setUpdates] = useState(false);
   const [honeypot, setHoneypot] = useState('');
   const openedAt = useRef(0);
   useEffect(() => { openedAt.current = Date.now(); }, []);
@@ -53,7 +52,6 @@ export function PartnerForm({ className }: { className?: string }) {
           email,
           phone: phone || undefined,
           gift,
-          updates,
           website: honeypot,
           elapsedMs: Date.now() - openedAt.current,
         }),
@@ -146,11 +144,6 @@ export function PartnerForm({ className }: { className?: string }) {
           ))}
         </select>
       </div>
-
-      <label className={styles.checkbox}>
-        <input type="checkbox" checked={updates} onChange={(e) => setUpdates(e.target.checked)} />
-        Send me a short update every quarter
-      </label>
 
       <button type="submit" className={styles.submit} disabled={status === 'sending'}>
         {status === 'sending' ? 'Sending…' : 'Send'}

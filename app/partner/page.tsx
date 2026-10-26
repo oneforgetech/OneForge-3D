@@ -127,10 +127,7 @@ export default function Page() {
           <Reveal>
             <p className={`kicker ${p.kick}`}>After you give</p>
             <h2 className={`${s.h2} display-heading`}>Let us say thank you.</h2>
-            <p className={p.lead}>
-              Tell us you gave, so we can thank you properly. If you&apos;d like, we&apos;ll send you a short update every quarter
-              on where your gift went.
-            </p>
+            <p className={p.lead}>Tell us you gave, so we can thank you properly.</p>
             <ul className={s.promises}>
               <li>Every gift goes into accounts kept separate by purpose.</li>
               <li>If an area is fully funded, your gift goes to the next greatest need.</li>

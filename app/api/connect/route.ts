@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { CHURCH_EMAIL } from '@/lib/church';
 import { PARTNER_EMAIL, PARTNER_GIFT_OPTIONS } from '@/lib/partner';
+import { partnerThanksEmail } from '@/lib/partner-email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,8 +13,9 @@ export const dynamic = 'force-dynamic';
  * Delivery (set at least one in production; see .env.example):
  *   - Email via Resend:  RESEND_API_KEY + CONNECT_FROM_EMAIL (+ CONNECT_TO_EMAIL, default hello@oneforge.org;
  *                        partner forms go to PARTNER_TO_EMAIL, default boye.oloyede@oneforge.org)
- *   - Webhook:           CONNECT_WEBHOOK_URL  (Slack / Zapier / Make / Google Apps Script…)
- * With neither set, production answers 503 so nobody is ever told "we've got it" when we haven't.
+ *   - Google Sheet:      SHEETS_WEBHOOK_URL  (the Apps Script in integrations/google-sheet.gs; one tab per form)
+ *   - Webhook:           CONNECT_WEBHOOK_URL  (Slack / Zapier / Make…)
+ * With none set, production answers 503 so nobody is ever told "we've got it" when we haven't.
  * (In local development it just logs, so the form can be tried without keys.)
  *
  * Protections: same-origin check, JSON-only with a size cap, strict field validation and length
@@ -27,6 +29,25 @@ const OPENING = new Set(['foundations', 'worship', 'depth', 'craft', 'calling', 
 const GROUPS = new Set(['fireside', 'forge']);
 
 const GIFTS = new Set(PARTNER_GIFT_OPTIONS.map((o) => o.value));
+
+// The Google Sheet's "Say hello" columns, in order. Questions only some topics ask stay blank on the others.
+const HELLO_SHEET_COLUMNS = [
+  'Name',
+  'WhatsApp',
+  'Email',
+  'Topic',
+  'Which Sunday',
+  'Bringing children',
+  'Children’s ages',
+  'Wants to hear when this opens',
+  'Group',
+  'Where they could serve',
+  'Prayer request',
+  'Keep private to the prayer team',
+  'Question',
+  'Message',
+  'OK to add to the WhatsApp community',
+];
 
 const MAX_BODY_BYTES = 12_000;
 const LIMITS = { name: 80, email: 120, text: 1500, short: 80 };
@@ -130,7 +151,7 @@ export async function POST(request: Request) {
   if (topic === 'question') fields.push(['Question', clean(body.question, LIMITS.text) || '—']);
   const note = clean(body.message, LIMITS.text);
   if (note) fields.push(['Message', note]);
-  fields.push(['OK to add to the WhatsApp community', body.community === true ? 'yes' : 'no'], ['Received', new Date().toISOString()]);
+  fields.push(['OK to add to the WhatsApp community', body.community === true ? 'yes' : 'no']);
 
   // 6) deliver
   return deliver({
@@ -139,6 +160,7 @@ export async function POST(request: Request) {
     to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
     replyTo: email,
     data: { topic, name: firstName, whatsapp: `+${digits}`, email: email || null },
+    sheet: { tab: 'Say hello', columns: HELLO_SHEET_COLUMNS },
   });
 }
 
@@ -153,9 +175,8 @@ async function partner(body: Record<string, unknown>) {
   if (!EMAIL_RE.test(email)) return fail(400, 'email_invalid');
   if (phone && (phoneDigits.length < 7 || phoneDigits.length > 15 || !PHONE_RE.test(phone))) return fail(400, 'phone_invalid');
   if (!GIFTS.has(gift)) return fail(400, 'invalid');
-  const updates = body.updates === true;
 
-  return deliver({
+  const response = await deliver({
     subject: `[ONEFORGE] partner — ${name}`,
     fields: [
       ['Name', name],
@@ -163,13 +184,38 @@ async function partner(body: Record<string, unknown>) {
       ['Phone or WhatsApp', phone || '—'],
       ['Gave to', PARTNER_GIFT_OPTIONS.find((o) => o.value === gift)?.label ?? gift],
       ['Reference', gift],
-      ['Send quarterly updates', updates ? 'yes' : 'no'],
-      ['Received', new Date().toISOString()],
     ],
     to: process.env.PARTNER_TO_EMAIL || PARTNER_EMAIL,
     replyTo: email,
-    data: { topic: 'partner', name, email, phone: phone || null, gift, updates },
+    data: { topic: 'partner', name, email, phone: phone || null, gift },
+    sheet: { tab: 'Partner' },
   });
+  // Only once the entry has reached us, so a failed send (which the giver may retry) never gets thanked twice.
+  if (response.ok) await sendPartnerThanks({ name, email, gift });
+  return response;
+}
+
+/**
+ * Boye's thank-you email to the giver (lib/partner-email.ts). Needs Resend; sent from PARTNER_FROM_EMAIL
+ * (falling back to CONNECT_FROM_EMAIL), with replies going to Boye. If it fails, the entry still counts.
+ */
+async function sendPartnerThanks({ name, email, gift }: { name: string; email: string; gift: string }) {
+  const { subject, html, text } = partnerThanksEmail({ name, gift });
+  const resendKey = process.env.RESEND_API_KEY;
+  const from = process.env.PARTNER_FROM_EMAIL || process.env.CONNECT_FROM_EMAIL;
+  if (!resendKey || !from) {
+    if (process.env.NODE_ENV !== 'production') console.log(`[partner thank-you — dev only, nothing was sent]\nSubject: ${subject}\n\n${text}`);
+    return;
+  }
+  const sent = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from, to: [email], subject, html, text, reply_to: PARTNER_EMAIL }),
+    signal: AbortSignal.timeout(8_000),
+  })
+    .then((r) => r.ok)
+    .catch(() => false);
+  if (!sent) console.error('[partner form] thank-you email not sent');
 }
 
 async function deliver({
@@ -178,31 +224,36 @@ async function deliver({
   to,
   replyTo,
   data,
+  sheet,
 }: {
   subject: string;
   fields: [string, string][];
   to: string;
   replyTo?: string;
   data: Record<string, unknown>;
+  /** The Google Sheet tab this form's entries go to, and its column order (default: the order of `fields`). */
+  sheet: { tab: string; columns?: readonly string[] };
 }) {
-  const text = fields.map(([k, v]) => `${k}: ${v}`).join('\n');
+  const text = [...fields, ['Received', new Date().toISOString()]].map(([k, v]) => `${k}: ${v}`).join('\n');
   const resendKey = process.env.RESEND_API_KEY;
   const from = process.env.CONNECT_FROM_EMAIL;
   const webhook = process.env.CONNECT_WEBHOOK_URL;
-  const configured = !!(resendKey && from) || !!webhook;
+  const sheetUrl = process.env.SHEETS_WEBHOOK_URL;
+  const configured = !!(resendKey && from) || !!webhook || !!sheetUrl;
 
   if (!configured) {
     if (process.env.NODE_ENV !== 'production') {
       console.log('[connect form — dev only, nothing was sent]\n' + text);
       return NextResponse.json({ ok: true, dev: true }, { headers: { 'Cache-Control': 'no-store' } });
     }
-    console.error('[connect form] no delivery configured: set RESEND_API_KEY + CONNECT_FROM_EMAIL, or CONNECT_WEBHOOK_URL');
+    console.error('[connect form] no delivery configured: set RESEND_API_KEY + CONNECT_FROM_EMAIL, SHEETS_WEBHOOK_URL or CONNECT_WEBHOOK_URL');
     return fail(503, 'not_configured');
   }
 
-  const attempts: Promise<boolean>[] = [];
+  const attempts: [channel: string, sent: Promise<boolean>][] = [];
   if (resendKey && from) {
-    attempts.push(
+    attempts.push([
+      'email',
       fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
@@ -211,10 +262,26 @@ async function deliver({
       })
         .then((r) => r.ok)
         .catch(() => false),
-    );
+    ]);
+  }
+  if (sheetUrl) {
+    attempts.push([
+      'Google Sheet',
+      fetch(sheetUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tab: sheet.tab, row: sheetRow(fields, sheet.columns) }),
+        signal: AbortSignal.timeout(15_000),
+      })
+        // Apps Script answers 200 even when the script fails (after a redirect, which fetch follows),
+        // so the script's own { ok } decides.
+        .then(async (r) => r.ok && (await r.json())?.ok === true)
+        .catch(() => false),
+    ]);
   }
   if (webhook) {
-    attempts.push(
+    attempts.push([
+      'webhook',
       fetch(webhook, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -223,14 +290,28 @@ async function deliver({
       })
         .then((r) => r.ok)
         .catch(() => false),
-    );
+    ]);
   }
-  const results = await Promise.all(attempts);
-  if (!results.some(Boolean)) {
+  const results = await Promise.all(attempts.map(([, sent]) => sent));
+  const failed = attempts.filter((_, i) => !results[i]).map(([channel]) => channel);
+  if (failed.length === attempts.length) {
     console.error('[connect form] delivery failed on every configured channel');
     return fail(502, 'delivery_failed');
   }
+  if (failed.length) console.error(`[connect form] not delivered by: ${failed.join(', ')}`);
   return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
+}
+
+/** One Google Sheet row: the tab's columns first (blank where this entry has no answer), then any other field. */
+function sheetRow(fields: [string, string][], columns: readonly string[] = []) {
+  const given = new Map(fields);
+  const order = [...columns, ...fields.map(([label]) => label).filter((label) => !columns.includes(label))];
+  return Object.fromEntries(
+    order.map((label) => {
+      const value = given.get(label) ?? '';
+      return [label, value === '—' ? '' : value];
+    }),
+  );
 }
 
 // Everything else is not allowed.
