@@ -15,9 +15,9 @@
  *      Click Deploy, then Authorize access. Google warns because this is your own script:
  *      choose Advanced > Go to … (unsafe) > Allow.
  *   4. Copy the Web app URL (it ends in /exec). Opening it in a browser should say the sheet is connected.
- *   5. In cPanel > Setup Node.js App > the website > Environment variables, add
- *        SHEETS_WEBHOOK_URL   =   that URL
- *      Save, then Restart the app.
+ *   5. In Vercel > the project > Settings > Environment Variables, add
+ *        SHEETS_WEBHOOK_URL   =   that URL   (Production)
+ *      Save, then redeploy (Deployments > latest > ⋯ > Redeploy) so the site picks it up.
  *
  * Keep the URL private: anyone who has it could add rows.
  * If you change this script later: Deploy > Manage deployments > pencil icon > Version: New version > Deploy.
