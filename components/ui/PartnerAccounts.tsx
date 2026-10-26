@@ -25,7 +25,7 @@ export function PartnerAccounts() {
       </div>
 
       <div className={styles.abroad}>
-        <h3 className={`${styles.heading} display-heading`}>Giving from abroad: dollar account</h3>
+        <h3 className={`${styles.heading} display-heading`}>Giving from abroad: Dollar Account</h3>
         <BankCard account={PARTNER_USD_ACCOUNT} wide>
           <p className={styles.swift}>
             Bank SWIFT code: <strong>{PARTNER_USD_SWIFT}</strong>
