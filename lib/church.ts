@@ -36,14 +36,18 @@ export const GIVING_ACCOUNTS = [
   { bank: 'Premium Trust Bank', number: '0010246634' },
 ] as const;
 
+/** The ONEFORGE YouTube channel (used for live services; messages stay on Spotify). */
+export const YOUTUBE_CHANNEL_ID = 'UC54QXOmFbgFNhWnjRWd-3_Q';
+
 export const SOCIAL_LINKS = [
   { label: 'Instagram', href: 'https://www.instagram.com/one.forge' },
   { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61575405565738' },
-  { label: 'YouTube', href: 'https://www.youtube.com/channel/UC54QXOmFbgFNhWnjRWd-3_Q' },
+  { label: 'YouTube', href: `https://www.youtube.com/channel/${YOUTUBE_CHANNEL_ID}` },
 ] as const;
 
-// Live services stream (YouTube is used for live only; messages stay on Spotify).
-export const LIVE_URL = 'https://www.youtube.com/live/WA44I4Zutek';
+// "Join us live": app/live/route.ts sends people to the stream that's on now, starting within the
+// hour, or most recently finished (it needs YOUTUBE_API_KEY; without it, the channel's live page).
+export const LIVE_URL = '/live';
 
 // YouTube Music. NOTE: this is the channel's page on YouTube Music; replace with the exact
 // podcast/playlist URL if the team has one.

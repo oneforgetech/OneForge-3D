@@ -25,6 +25,7 @@ type Events = {
   invitation_video_open: Record<string, never>;
   listen_play: { episode: string };
   contact_click: { method: 'phone' | 'email' | 'whatsapp' };
+  live_click: Record<string, never>;
 };
 
 export function track<E extends keyof Events>(event: E, ...[params]: Events[E] extends Record<string, never> ? [] : [Events[E]]) {
