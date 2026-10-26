@@ -38,6 +38,14 @@
   animation: hero-rise 1s var(--ease-standard) 0.45s backwards;
 }
 
+.heroKicker {
+  animation: hero-rise 1s var(--ease-standard) backwards;
+}
+
+.heroExtra {
+  animation: hero-rise 1s var(--ease-standard) 0.6s backwards;
+}
+
 .heroWin {
   position: relative;
   justify-self: end;
@@ -518,8 +526,10 @@
 @media (prefers-reduced-motion: reduce) {
   .armed,
   .revealed,
+  .heroKicker,
   .heroTitle,
   .heroLead,
+  .heroExtra,
   .heroWin {
     animation: none;
     transition-duration: 0.01ms;

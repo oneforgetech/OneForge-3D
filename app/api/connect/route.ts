@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
 import { CHURCH_EMAIL } from '@/lib/church';
+import { PARTNER_EMAIL, PARTNER_GIFT_OPTIONS } from '@/lib/partner';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/connect — the "Say hello" form.
+ * POST /api/connect — the "Say hello" form, and (topic "partner") the /partner page's
+ * "Let us say thank you" form.
  *
  * Delivery (set at least one in production; see .env.example):
- *   - Email via Resend:  RESEND_API_KEY + CONNECT_FROM_EMAIL (+ CONNECT_TO_EMAIL, default hello@oneforge.org)
+ *   - Email via Resend:  RESEND_API_KEY + CONNECT_FROM_EMAIL (+ CONNECT_TO_EMAIL, default hello@oneforge.org;
+ *                        partner forms go to PARTNER_TO_EMAIL, default boye.oloyede@oneforge.org)
  *   - Webhook:           CONNECT_WEBHOOK_URL  (Slack / Zapier / Make / Google Apps Script…)
  * With neither set, production answers 503 so nobody is ever told "we've got it" when we haven't.
  * (In local development it just logs, so the form can be tried without keys.)
@@ -23,8 +26,12 @@ type Topic = (typeof TOPICS)[number];
 const OPENING = new Set(['foundations', 'worship', 'depth', 'craft', 'calling', 'junior-church', 'family-ministry', 'family-ministry-marriage', 'family-ministry-singles', 'family-ministry-men', 'family-ministry-women']);
 const GROUPS = new Set(['fireside', 'forge']);
 
+const GIFTS = new Set(PARTNER_GIFT_OPTIONS.map((o) => o.value));
+
 const MAX_BODY_BYTES = 12_000;
 const LIMITS = { name: 80, email: 120, text: 1500, short: 80 };
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PHONE_RE = /^[+\d\s()\-.]+$/;
 
 // --- rate limit (per IP; in memory, so it resets when the server instance does) --------------
 const hits = new Map<string, number[]>();
@@ -85,6 +92,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
   }
 
+  if (body.topic === 'partner') return partner(body);
+
   // 5) validate
   const firstName = clean(body.firstName, LIMITS.name);
   const whatsappRaw = clean(body.whatsapp, 30);
@@ -92,10 +101,10 @@ export async function POST(request: Request) {
   const topic = clean(body.topic, 20) as Topic;
   const email = clean(body.email, LIMITS.email);
   if (!firstName) return fail(400, 'name_required');
-  if (digits.length < 10 || digits.length > 15 || !/^[+\d\s()\-.]+$/.test(whatsappRaw)) return fail(400, 'whatsapp_invalid');
+  if (digits.length < 10 || digits.length > 15 || !PHONE_RE.test(whatsappRaw)) return fail(400, 'whatsapp_invalid');
   if (!TOPICS.includes(topic)) return fail(400, 'topic_invalid');
   if (body.permission !== true) return fail(400, 'permission_required');
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return fail(400, 'email_invalid');
+  if (email && !EMAIL_RE.test(email)) return fail(400, 'email_invalid');
 
   const opening = clean(body.opening, LIMITS.short);
   const group = clean(body.group, LIMITS.short);
@@ -123,13 +132,62 @@ export async function POST(request: Request) {
   if (note) fields.push(['Message', note]);
   fields.push(['OK to add to the WhatsApp community', body.community === true ? 'yes' : 'no'], ['Received', new Date().toISOString()]);
 
-  const text = fields.map(([k, v]) => `${k}: ${v}`).join('\n');
-  const subject = `[ONEFORGE] ${topic} — ${firstName}`;
-
   // 6) deliver
+  return deliver({
+    subject: `[ONEFORGE] ${topic} — ${firstName}`,
+    fields,
+    to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
+    replyTo: email,
+    data: { topic, name: firstName, whatsapp: `+${digits}`, email: email || null },
+  });
+}
+
+/** The partner page's "Let us say thank you" form: email is required, phone is optional, no WhatsApp permission. */
+async function partner(body: Record<string, unknown>) {
+  const name = clean(body.name, LIMITS.name);
+  const email = clean(body.email, LIMITS.email);
+  const phone = clean(body.phone, 30);
+  const phoneDigits = phone.replace(/\D/g, '');
+  const gift = clean(body.gift, 20);
+  if (!name) return fail(400, 'name_required');
+  if (!EMAIL_RE.test(email)) return fail(400, 'email_invalid');
+  if (phone && (phoneDigits.length < 7 || phoneDigits.length > 15 || !PHONE_RE.test(phone))) return fail(400, 'phone_invalid');
+  if (!GIFTS.has(gift)) return fail(400, 'invalid');
+  const updates = body.updates === true;
+
+  return deliver({
+    subject: `[ONEFORGE] partner — ${name}`,
+    fields: [
+      ['Name', name],
+      ['Email', email],
+      ['Phone or WhatsApp', phone || '—'],
+      ['Gave to', PARTNER_GIFT_OPTIONS.find((o) => o.value === gift)?.label ?? gift],
+      ['Reference', gift],
+      ['Send quarterly updates', updates ? 'yes' : 'no'],
+      ['Received', new Date().toISOString()],
+    ],
+    to: process.env.PARTNER_TO_EMAIL || PARTNER_EMAIL,
+    replyTo: email,
+    data: { topic: 'partner', name, email, phone: phone || null, gift, updates },
+  });
+}
+
+async function deliver({
+  subject,
+  fields,
+  to,
+  replyTo,
+  data,
+}: {
+  subject: string;
+  fields: [string, string][];
+  to: string;
+  replyTo?: string;
+  data: Record<string, unknown>;
+}) {
+  const text = fields.map(([k, v]) => `${k}: ${v}`).join('\n');
   const resendKey = process.env.RESEND_API_KEY;
   const from = process.env.CONNECT_FROM_EMAIL;
-  const to = process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL;
   const webhook = process.env.CONNECT_WEBHOOK_URL;
   const configured = !!(resendKey && from) || !!webhook;
 
@@ -148,7 +206,7 @@ export async function POST(request: Request) {
       fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from, to: [to], subject, text, ...(email ? { reply_to: email } : {}) }),
+        body: JSON.stringify({ from, to: [to], subject, text, ...(replyTo ? { reply_to: replyTo } : {}) }),
         signal: AbortSignal.timeout(10_000),
       })
         .then((r) => r.ok)
@@ -160,7 +218,7 @@ export async function POST(request: Request) {
       fetch(webhook, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: `*${subject}*\n${text}`, subject, topic, name: firstName, whatsapp: `+${digits}`, email: email || null, message: text }),
+        body: JSON.stringify({ text: `*${subject}*\n${text}`, subject, ...data, message: text }),
         signal: AbortSignal.timeout(10_000),
       })
         .then((r) => r.ok)

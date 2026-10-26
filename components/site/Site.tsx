@@ -76,7 +76,22 @@ export function PageShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function PageHero({ title, lead, image, alt }: { title: string; lead?: string; image: string; alt: string }) {
+export function PageHero({
+  title,
+  lead,
+  image,
+  alt,
+  kicker,
+  children,
+}: {
+  title: string;
+  lead?: string;
+  image: string;
+  alt: string;
+  kicker?: string;
+  /** Extra hero content under the lead (buttons, a footnote). */
+  children?: React.ReactNode;
+}) {
   const ref = useRef<HTMLElement>(null);
 
   // Scroll parallax: the photo window flies toward you, the title recedes.
@@ -102,8 +117,10 @@ export function PageHero({ title, lead, image, alt }: { title: string; lead?: st
   return (
     <section ref={ref} className={styles.hero} data-snap>
       <div className={styles.heroText}>
+        {kicker && <p className={`kicker ${styles.kick} ${styles.heroKicker}`}>{kicker}</p>}
         <h1 className={`${styles.heroTitle} display-heading`}>{title}</h1>
         {lead && <p className={styles.heroLead}>{lead}</p>}
+        {children && <div className={styles.heroExtra}>{children}</div>}
       </div>
       <div className={styles.heroWin}>
         <Image src={image} alt={alt} fill priority sizes="(min-width: 860px) 420px, 70vw" />
