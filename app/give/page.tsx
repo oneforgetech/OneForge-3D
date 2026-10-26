@@ -14,7 +14,7 @@ export default function Page() {
   return (
     <PageShell>
       <BreadcrumbStructuredData items={[{ label: 'Give', path: '/give' }]} />
-      <PageHero title="Keep this fire lit." lead="It costs money to keep ONEFORGE going, and it stays worth it." image="/images/risen/group-cast.jpg" alt="The ONEFORGE community gathered together" />
+      <PageHero title="Keep this fire lit." image="/images/risen/group-cast.jpg" alt="The ONEFORGE community gathered together" />
       <Section>
         <Reveal className={p.split}>
           <div>
