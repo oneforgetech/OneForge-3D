@@ -1,0 +1,172 @@
+/* The hero's main invitation: bigger and brighter than the other buttons, with a soft pulse. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 30px 8px 8px;
+  border: 1.5px solid var(--of-teal);
+  border-radius: 999px;
+  background: rgba(13, 43, 43, 0.55);
+  color: var(--of-teal);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(17px, 1.5vw, 21px);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 rgba(0, 229, 160, 0.5);
+  animation: pulse 2.6s ease-out infinite;
+  transition: transform var(--duration-fast) var(--ease-standard), background var(--duration-fast);
+}
+
+.button:hover {
+  transform: translateY(-2px) scale(1.03);
+  background: var(--of-teal);
+  color: var(--of-forest-black);
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--of-mint-white);
+  outline-offset: 3px;
+}
+
+.play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--of-teal);
+  color: var(--of-forest-black);
+  padding-left: 3px;
+}
+
+.button:hover .play {
+  background: var(--of-forest-black);
+  color: var(--of-teal);
+}
+
+.label {
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 229, 160, 0.5);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 20px rgba(0, 229, 160, 0);
+  }
+}
+
+/* ---- modal: the page stays visible behind a light, blurred veil ---- */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: rgba(6, 22, 22, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fade 0.25s ease both;
+}
+
+.dialog {
+  position: relative;
+  /* never taller than the screen: width follows the available height (16:9) on short or landscape screens */
+  width: min(980px, 100%, calc((100vh - 120px) * 16 / 9));
+  width: min(980px, 100%, calc((100dvh - 120px) * 16 / 9));
+  animation: rise 0.35s var(--ease-standard) both;
+}
+
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+}
+
+.iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.close {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--glass-border-on-dark);
+  border-radius: 50%;
+  background: rgba(13, 43, 43, 0.8);
+  color: var(--of-mint-white);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--of-teal);
+  color: var(--of-forest-black);
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--of-teal);
+  outline-offset: 2px;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+
+@media (max-height: 520px) {
+  .dialog {
+    width: min(980px, 100%, calc((100dvh - 32px) * 16 / 9));
+  }
+  .close {
+    right: 8px;
+    bottom: auto;
+    top: 8px;
+    background: rgba(13, 43, 43, 0.7);
+  }
+}
+
+@media (max-width: 600px) {
+  .button {
+    padding-right: 24px;
+  }
+  .play {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .backdrop,
+  .dialog {
+    animation: none;
+  }
+}

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Countdown } from '@/components/ui/Countdown';
 import { IconArrowUpRight, IconMapPin, IconPause, IconPlay } from '@/components/ui/icons';
 import { CHURCH_ADDRESS, CHURCH_EMAIL, CHURCH_MAPS_URL, LIVE_URL, YOUTUBE_MUSIC_URL } from '@/lib/church';
+import { InvitationVideo } from '@/components/ui/InvitationVideo';
 import { visitCta } from '@/lib/content';
 import { SPOTIFY_SHOW_EMBED_URL, SPOTIFY_SHOW_URL, latestEpisode as fallbackEpisode, type Episode } from '@/lib/episodes';
 import { launchCopy } from '@/lib/launch';
@@ -128,6 +129,9 @@ export function Arrive() {
             )}
           </h2>
           <p className={`${styles.heroSub} ${styles.rise}`}>{launchCopy('Our first Sunday together.', 'Come as you are.')}</p>
+          <div className={`${styles.heroInvite} ${styles.rise}`}>
+            <InvitationVideo />
+          </div>
           <div className={`${styles.heroCount} ${styles.rise}`}>
             <Countdown className={styles.countdown} unitClass={`${styles.unit} glass-on-dark`} numClass={styles.unitNum} labelClass={styles.unitLabel} />
           </div>

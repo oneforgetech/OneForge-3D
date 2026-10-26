@@ -1595,3 +1595,12 @@
     font-size: 16px;
   }
 }
+
+/* "Here's Your Invitation" sits between the first-Sunday line and the countdown (empty until a video is set) */
+.heroInvite {
+  margin-top: clamp(14px, 2.6vh, 28px);
+}
+
+.heroInvite:empty {
+  display: none;
+}

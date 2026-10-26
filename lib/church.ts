@@ -48,3 +48,10 @@ export const LIVE_URL = 'https://www.youtube.com/live/WA44I4Zutek';
 // YouTube Music. NOTE: this is the channel's page on YouTube Music; replace with the exact
 // podcast/playlist URL if the team has one.
 export const YOUTUBE_MUSIC_URL = 'https://music.youtube.com/channel/UC54QXOmFbgFNhWnjRWd-3_Q';
+
+/**
+ * The "Here's Your Invitation" film on the home hero. Paste its YouTube link here (watch, youtu.be,
+ * /live/, /shorts/ or /embed/ forms all work); NEXT_PUBLIC_INVITATION_VIDEO_URL overrides it.
+ * While empty, the button is not shown.
+ */
+export const INVITATION_VIDEO_URL = process.env.NEXT_PUBLIC_INVITATION_VIDEO_URL || 'https://www.youtube.com/watch?v=BauFAdTf_kY';
