@@ -86,7 +86,8 @@ export function PageHero({
   children,
 }: {
   title: string;
-  lead?: string;
+  /** One paragraph, or several. */
+  lead?: string | string[];
   image: string;
   alt: string;
   kicker?: string;
@@ -104,7 +105,11 @@ export function PageHero({
     let raf = 0;
     const update = () => {
       raf = 0;
-      el.style.setProperty('--hp', Math.min(1, Math.max(0, window.scrollY / (window.innerHeight * 0.9))).toFixed(3));
+      // A hero taller than the screen (long copy, or a phone) is still being read until its bottom is in view,
+      // so the fade only starts from there. A hero that fits on one screen starts fading straight away.
+      const rest = Math.max(0, el.getBoundingClientRect().bottom + window.scrollY - window.innerHeight);
+      const progress = (window.scrollY - rest) / (window.innerHeight * 0.9);
+      el.style.setProperty('--hp', Math.min(1, Math.max(0, progress)).toFixed(3));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -122,7 +127,12 @@ export function PageHero({
       <div className={styles.heroText}>
         {kicker && <p className={`kicker ${styles.kick} ${styles.heroKicker}`}>{kicker}</p>}
         <h1 className={`${styles.heroTitle} display-heading`}>{title}</h1>
-        {lead && <p className={styles.heroLead}>{lead}</p>}
+        {lead &&
+          [lead].flat().map((paragraph) => (
+            <p key={paragraph} className={styles.heroLead}>
+              {paragraph}
+            </p>
+          ))}
         {children && <div className={styles.heroExtra}>{children}</div>}
       </div>
       <div className={styles.heroWin}>

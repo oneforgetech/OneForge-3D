@@ -28,7 +28,10 @@ export default function Page() {
       <PageHero
         kicker="Partner with ONEFORGE"
         title="Help us build the room."
-        lead="On Sunday 1 November 2026, we open our doors for weekly gatherings in Lagos. This hasn't happened overnight. A small group of us, founding members and partners, have been preparing for months, giving our time, skills and resources to lay a strong foundation. We've already begun the work, and we're inviting others to help us carry it forward."
+        lead={[
+          "On Sunday 1 November 2026, ONEFORGE begins weekly gatherings in Ogudu, Lagos. We're inviting partners to help us launch well, build a strong foundation and sustain the work through our first year.",
+          'Your partnership will help us shape people who grow in Christ and lead in every room that matters.',
+        ]}
         image="/images/risen/worship-team.jpg"
         alt="The ONEFORGE worship team singing together on stage"
         centred
@@ -39,7 +42,10 @@ export default function Page() {
             Talk to Boye
           </a>
         </div>
-        <p className={s.heroNote}>Our founding members and partners have already given ₦120 million of their own.</p>
+        <p className={s.heroNote}>
+          Our founding members and partners have invested their time, skills and resources. Now, we invite you to help build on
+          that foundation.
+        </p>
       </PageHero>
 
       <Section>
