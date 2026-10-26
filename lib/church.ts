@@ -3,6 +3,7 @@ export const CHURCH_FORMAL_NAME = 'ONEFORGE Church';
 export const CHURCH_EMAIL = 'hello@oneforge.org';
 export const CHURCH_ADDRESS = "Detutu's Event Place, 2 Association Close, Ogudu, Lagos";
 export const CHURCH_MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CHURCH_ADDRESS)}`;
+export const WHATSAPP_COMMUNITY_URL = 'https://chat.whatsapp.com/DBHMV3xIBag8zw2EJpSIR5';
 export const CHURCH_SUNDAY_TIME = '9:00 AM';
 
 // Broken out for structured data (PostalAddress) — kept alongside the

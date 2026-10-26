@@ -4,6 +4,7 @@ import { Cursor } from '@/components/chrome/Cursor';
 import { FireCursor } from '@/components/chrome/FireCursor';
 import { FloatingPlayer } from '@/components/chrome/FloatingPlayer';
 import { Footer } from '@/components/chrome/Footer';
+import { WhatsAppWidget } from '@/components/chrome/WhatsAppWidget';
 import { Hud } from '@/components/chrome/Hud';
 import { StructuredData } from '@/components/chrome/StructuredData';
 import { SITE_URL } from '@/lib/church';
@@ -81,6 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <Footer />
         <FloatingPlayer />
+        <WhatsAppWidget />
         <FireCursor />
         <Cursor />
       </body>
