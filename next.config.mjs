@@ -2,13 +2,21 @@ const isDev = process.env.NODE_ENV !== 'production';
 
 // Inline scripts are needed (pre-paint script, JSON-LD, Next's own bootstrap), so 'unsafe-inline'
 // stays on script-src; everything else is locked to what the site actually uses.
+// Google Analytics: the hosts Google lists for GA4 (https://developers.google.com/tag-platform/security/guides/csp).
+// gtag.js also sends a copy of each hit to google.com, and Google signals uses the visitor's country
+// domain: google.com.ng covers Nigeria. Any other country domain being blocked only loses demographics.
+const GA_SCRIPT = 'https://*.googletagmanager.com';
+const GA_HOSTS =
+  'https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.g.doubleclick.net https://*.google.com https://*.google.com.ng';
+const GA_IMG = GA_HOSTS;
+const GA_CONNECT = GA_HOSTS;
 const CSP = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://open.spotify.com https://*.spotifycdn.com${isDev ? " 'unsafe-eval'" : ''}`,
+  `script-src 'self' 'unsafe-inline' https://open.spotify.com https://*.spotifycdn.com ${GA_SCRIPT}${isDev ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.spotifycdn.com https://i.scdn.co",
+  `img-src 'self' data: blob: https://*.spotifycdn.com https://i.scdn.co ${GA_IMG}`,
   "font-src 'self' data:",
-  "connect-src 'self' https://open.spotify.com https://*.spotify.com https://*.spotifycdn.com" + (isDev ? ' ws: wss:' : ''),
+  `connect-src 'self' https://open.spotify.com https://*.spotify.com https://*.spotifycdn.com ${GA_CONNECT}` + (isDev ? ' ws: wss:' : ''),
   "frame-src https://open.spotify.com https://www.youtube-nocookie.com https://www.youtube.com",
   "media-src 'self' https://*.spotifycdn.com https://*.scdn.co",
   "object-src 'none'",

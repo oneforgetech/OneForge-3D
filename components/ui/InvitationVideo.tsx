@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { IconClose, IconPlay } from '@/components/ui/icons';
+import { track } from '@/lib/analytics';
 import { INVITATION_VIDEO_URL } from '@/lib/church';
 import { youtubeId } from '@/lib/youtube';
 import { useMounted } from '@/lib/useMounted';
@@ -63,7 +64,16 @@ export function InvitationVideo({ className }: { className?: string }) {
 
   return (
     <>
-      <button ref={triggerRef} type="button" className={`${styles.button} ${className ?? ''}`} onClick={() => setOpen(true)} data-cursor="Play">
+      <button
+        ref={triggerRef}
+        type="button"
+        className={`${styles.button} ${className ?? ''}`}
+        onClick={() => {
+          setOpen(true);
+          track('invitation_video_open');
+        }}
+        data-cursor="Play"
+      >
         <span className={styles.play}>
           <IconPlay size={22} />
         </span>

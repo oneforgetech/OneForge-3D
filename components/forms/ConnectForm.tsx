@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DatePicker } from './DatePicker';
 import { IconCheck } from '@/components/ui/icons';
+import { track } from '@/lib/analytics';
 import { CHURCH_EMAIL } from '@/lib/church';
 import { LAUNCH_DATE } from '@/lib/launch';
 import type { ConnectTopic } from '@/lib/connect';
@@ -128,6 +129,7 @@ export function ConnectForm() {
         throw new Error('request failed');
       }
       setStatus('sent');
+      track('connect_form_sent', { topic });
     } catch {
       setStatus('error');
     }

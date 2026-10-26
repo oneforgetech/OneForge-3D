@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { IconCheck } from '@/components/ui/icons';
+import { track } from '@/lib/analytics';
 import { CHURCH_EMAIL } from '@/lib/church';
 import { PARTNER_GIFT_OPTIONS } from '@/lib/partner';
 import styles from './ConnectForm.module.css';
@@ -62,6 +63,7 @@ export function PartnerForm({ className }: { className?: string }) {
         throw new Error('request failed');
       }
       setStatus('sent');
+      track('partner_form_sent', { gift });
     } catch {
       setStatus('error');
     }

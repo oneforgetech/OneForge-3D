@@ -1,6 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
+import { track } from './analytics';
 import type { Episode } from './episodes';
 
 /**
@@ -39,6 +40,7 @@ export const useAppStore = create<PlayerState>((set, get) => ({
       return;
     }
     set({ currentEpisode: episode, isPlaying: false, progress: 0, duration: 0 });
+    track('listen_play', { episode: episode.title });
   },
   setPlayback: ({ isPlaying, progress, duration }) => set({ isPlaying, progress, duration }),
   closePlayer: () => set({ currentEpisode: null, isPlaying: false, progress: 0, duration: 0 }),

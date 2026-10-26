@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { IconArrowUpRight } from '@/components/ui/icons';
+import { track } from '@/lib/analytics';
 import { GIVING_ACCOUNT_NAME } from '@/lib/church';
 import {
   PARTNER_NGN_ACCOUNTS,
@@ -53,6 +54,7 @@ function BankCard({ account, wide, children }: { account: PartnerAccount; wide?:
     try {
       await navigator.clipboard.writeText(account.number);
       setCopied(true);
+      track('copy_account_number', { bank: account.bank, currency: account.currency });
     } catch {
       // Clipboard API unavailable: the number is still selectable text.
     }
