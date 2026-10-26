@@ -189,6 +189,8 @@ export function createWorld(o: Options): WorldHandle {
       const inn = i === 0 ? 1 : easeInOutCubic(clamp((s - starts[i]) / enterPx));
       const out = exitPx ? easeInOutCubic(clamp((s - (cEnd - exitPx)) / exitPx)) : 0;
       el.style.visibility = (i === 0 || inn > 0.001) && out < 0.999 ? 'visible' : 'hidden';
+      // only the section you're on takes taps and clicks; the others are see-through, never in the way
+      el.style.pointerEvents = i === index ? '' : 'none';
       innArr[i] = inn;
       outArr[i] = out;
       setVar(el, '--in', inn);

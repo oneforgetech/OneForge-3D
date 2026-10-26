@@ -234,13 +234,13 @@ export function Fronts() {
       A.style.opacity = a.toFixed(3);
       A.style.transform = `translate3d(0,${((1 - a) * -40).toFixed(1)}px,${((1 - a) * -260).toFixed(1)}px)`;
       A.style.filter = a < 1 ? `blur(${((1 - a) * 8).toFixed(1)}px)` : 'none';
-      A.style.visibility = a > 0.01 ? 'visible' : 'hidden';
+      A.style.visibility = a > 0.01 ? 'inherit' : 'hidden';
     }
     if (B) {
       B.style.opacity = b.toFixed(3);
       B.style.transform = `translate3d(0,${((1 - b) * 50).toFixed(1)}px,${((1 - b) * -260).toFixed(1)}px)`;
       B.style.filter = b < 1 ? `blur(${((1 - b) * 8).toFixed(1)}px)` : 'none';
-      B.style.visibility = b > 0.01 ? 'visible' : 'hidden';
+      B.style.visibility = b > 0.01 ? 'inherit' : 'hidden';
     }
   }, []);
   useWorldFrame(frame);
