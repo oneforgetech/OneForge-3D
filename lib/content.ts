@@ -76,7 +76,7 @@ export const WAYS_IN = [
 
 export const VISIT_BLOCKS: { id?: string; label: string; body: string; link?: { label: string; href: string } }[] = [
   { id: 'location', label: 'Where', body: CHURCH_ADDRESS, link: { label: 'Get directions ↗', href: CHURCH_MAPS_URL } },
-  { label: 'When', body: '9:00 AM, about 75 minutes.' },
+  { label: 'When', body: '9:00 AM' },
   { id: 'expect', label: 'What happens', body: 'Worship, Truth from Scripture. Stay and Connect or head home.' },
   { id: 'kids', label: 'Your children', body: 'Your children are welcome. For now, they’ll join you in the main gathering and receive an age-appropriate take-home pack to continue learning at home.' },
   { label: "Can't make it in person?", body: 'Every message goes on Spotify afterwards.' },

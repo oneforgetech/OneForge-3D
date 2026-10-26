@@ -18,16 +18,18 @@ export default function Page() {
       <Section>
         <Reveal className={p.split}>
           <div>
-            <p className={p.lead} style={{ marginTop: 0 }}>
-              Here&apos;s the plain truth: it costs money to keep this going. The room, the lights, the people who follow up
-              with someone new. If ONEFORGE has been worth something to you, you can help keep it going for the next person
-              who walks in tired. If you can&apos;t right now, that changes nothing about your place here. The door stays open
-              either way.
+            <h2 className={`${p.h2} display-heading`} style={{ marginTop: 0, fontSize: 'clamp(30px, 3.6vw, 52px)' }}>
+              WHAT HAPPENS HERE GOES FURTHER.
+            </h2>
+            <p className={p.lead}>What God is doing in a life was never meant to end in one room.</p>
+            <p className={p.body}>
+              It reaches homes. Workplaces. Communities. Every room where someone can make a difference.
             </p>
             <p className={p.body}>
-              We&apos;ll teach on giving, because we believe it&apos;s part of worship. We&apos;ll never use guilt or pressure
-              to ask for it.
+              Your generosity helps create room for people to encounter Jesus, grow in Christ, and carry His presence into the
+              world.
             </p>
+            <p className={p.body}>If ONEFORGE has meant something to you, help make room for someone else.</p>
           </div>
           <div className={p.slab}>
             <GivingAccounts />
