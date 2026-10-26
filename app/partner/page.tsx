@@ -31,6 +31,7 @@ export default function Page() {
         lead="On Sunday 1 November 2026, we open our doors for weekly gatherings in Lagos. This hasn't happened overnight. A small group of us, founding members and partners, have been preparing for months, giving our time, skills and resources to lay a strong foundation. We've already begun the work, and we're inviting others to help us carry it forward."
         image="/images/risen/worship-team.jpg"
         alt="The ONEFORGE worship team singing together on stage"
+        centred
       >
         <div className={`${p.actions} ${s.heroActions}`}>
           <Pill href="#give">Give now</Pill>

@@ -82,6 +82,7 @@ export function PageHero({
   image,
   alt,
   kicker,
+  centred,
   children,
 }: {
   title: string;
@@ -89,6 +90,8 @@ export function PageHero({
   image: string;
   alt: string;
   kicker?: string;
+  /** Line the photo up with the middle of the text instead of its bottom (for heroes with a lot of text). */
+  centred?: boolean;
   /** Extra hero content under the lead (buttons, a footnote). */
   children?: React.ReactNode;
 }) {
@@ -115,7 +118,7 @@ export function PageHero({
   }, []);
 
   return (
-    <section ref={ref} className={styles.hero} data-snap>
+    <section ref={ref} className={`${styles.hero} ${centred ? styles.heroCentred : ''}`} data-snap>
       <div className={styles.heroText}>
         {kicker && <p className={`kicker ${styles.kick} ${styles.heroKicker}`}>{kicker}</p>}
         <h1 className={`${styles.heroTitle} display-heading`}>{title}</h1>
