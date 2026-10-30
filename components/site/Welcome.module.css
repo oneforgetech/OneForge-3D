@@ -1,0 +1,8 @@
+/* The unlisted /welcome page. Shared building blocks come from Page.module.css. */
+
+/* "We're glad\nyou're here!" (Page.tsx) is longer than the other heroes' titles, so
+   Page.module's heroTitle cap is too large to keep each line on one line at desktop
+   widths. Capped lower here, verified to hold the two-line break from 320px to 2560px. */
+.heroTitle {
+  font-size: clamp(46px, 8.6vw, 118px);
+}

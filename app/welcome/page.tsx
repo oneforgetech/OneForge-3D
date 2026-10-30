@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { WelcomeForm } from '@/components/forms/WelcomeForm';
 import { PageHero, PageShell, Section } from '@/components/site/Site';
+import w from '@/components/site/Welcome.module.css';
 
 // Unlisted on purpose — reached only by the QR code on the physical guest card, never
 // linked from the site's own nav/footer. noindex (and left out of sitemap.ts) so it
@@ -18,6 +19,7 @@ export default function Page() {
       <PageHero
         kicker="Welcome"
         title={`We're glad\nyou're here!`}
+        titleClassName={w.heroTitle}
         lead="You don't have to have it all figured out to belong."
         image="/images/risen/group-cast.jpg"
         alt="The ONEFORGE community gathered together"

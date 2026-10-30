@@ -83,6 +83,7 @@ export function PageHero({
   alt,
   kicker,
   centred,
+  titleClassName,
   children,
 }: {
   title: string;
@@ -93,6 +94,8 @@ export function PageHero({
   kicker?: string;
   /** Line the photo up with the middle of the text instead of its bottom (for heroes with a lot of text). */
   centred?: boolean;
+  /** Extra class for the title, e.g. to cap its size so a forced line break (\n + pre-line) holds at every width. */
+  titleClassName?: string;
   /** Extra hero content under the lead (buttons, a footnote). */
   children?: React.ReactNode;
 }) {
@@ -126,7 +129,7 @@ export function PageHero({
     <section ref={ref} className={`${styles.hero} ${centred ? styles.heroCentred : ''}`} data-snap>
       <div className={styles.heroText}>
         {kicker && <p className={`kicker ${styles.kick} ${styles.heroKicker}`}>{kicker}</p>}
-        <h1 className={`${styles.heroTitle} display-heading`}>{title}</h1>
+        <h1 className={`${styles.heroTitle} ${titleClassName ?? ''} display-heading`}>{title}</h1>
         {lead &&
           [lead].flat().map((paragraph) => (
             <p key={paragraph} className={styles.heroLead}>
