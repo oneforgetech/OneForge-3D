@@ -16,7 +16,8 @@ export default function Page() {
   return (
     <PageShell>
       <PageHero
-        title="Welcome."
+        kicker="Welcome"
+        title="We're glad you're here!"
         lead="You don't have to have it all figured out to belong."
         image="/images/risen/group-cast.jpg"
         alt="The ONEFORGE community gathered together"
