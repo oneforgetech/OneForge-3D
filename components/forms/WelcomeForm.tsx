@@ -16,6 +16,7 @@ type Errors = Partial<Record<'name' | 'interests', string>>;
 export function WelcomeForm() {
   const [name, setName] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [contactConsent, setContactConsent] = useState(false);
   const [anythingElse, setAnythingElse] = useState('');
@@ -61,8 +62,9 @@ export function WelcomeForm() {
           topic: 'welcome',
           name,
           interests,
+          email: email || undefined,
           phone: phone || undefined,
-          contactConsent: phone ? contactConsent : undefined,
+          contactConsent: phone || email ? contactConsent : undefined,
           anythingElse: anythingElse || undefined,
           website: honeypot,
           elapsedMs: Date.now() - openedAt.current,
@@ -157,7 +159,18 @@ export function WelcomeForm() {
         />
       </div>
 
-      {phone && (
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="email">Email (optional)</label>
+        <input
+          id="email"
+          className={styles.input}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          type="email"
+        />
+      </div>
+
+      {(phone || email) && (
         <label className={styles.checkbox}>
           <input type="checkbox" checked={contactConsent} onChange={(e) => setContactConsent(e.target.checked)} />
           Yes, ONEFORGE may contact me about the request I&apos;ve selected.

@@ -50,7 +50,7 @@ const HELLO_SHEET_COLUMNS = [
   'OK to add to the WhatsApp community',
 ];
 
-const WELCOME_SHEET_COLUMNS = ['Name', 'Interested in', 'Phone', 'OK to contact', 'Anything else'];
+const WELCOME_SHEET_COLUMNS = ['Name', 'Interested in', 'Email', 'Phone', 'OK to contact', 'Anything else'];
 
 const MAX_BODY_BYTES = 12_000;
 const LIMITS = { name: 80, email: 120, text: 1500, short: 80 };
@@ -222,17 +222,19 @@ async function sendPartnerThanks({ name, email, gift }: { name: string; email: s
   if (!sent) console.error('[partner form] thank-you email not sent');
 }
 
-/** The /welcome guest card (QR code handed out in-service): name + what they'd like help with, phone optional. */
+/** The /welcome guest card (QR code handed out in-service): name + what they'd like help with, email and phone optional. */
 async function welcomeCard(body: Record<string, unknown>) {
   const name = clean(body.name, LIMITS.name);
   const interests = Array.isArray(body.interests)
     ? body.interests.filter((v): v is string => typeof v === 'string' && WELCOME_INTERESTS.some((i) => i.value === v))
     : [];
+  const email = clean(body.email, LIMITS.email);
   const phone = clean(body.phone, 30);
   const phoneDigits = phone.replace(/\D/g, '');
   const anythingElse = clean(body.anythingElse, LIMITS.text);
   if (!name) return fail(400, 'name_required');
   if (interests.length === 0) return fail(400, 'interests_required');
+  if (email && !EMAIL_RE.test(email)) return fail(400, 'email_invalid');
   if (phone && (phoneDigits.length < 7 || phoneDigits.length > 15 || !PHONE_RE.test(phone))) return fail(400, 'phone_invalid');
 
   const interestLabels = interests.map((v) => WELCOME_INTERESTS.find((i) => i.value === v)!.label);
@@ -242,13 +244,14 @@ async function welcomeCard(body: Record<string, unknown>) {
     fields: [
       ['Name', name],
       ['Interested in', interestLabels.join('; ')],
+      ['Email', email || '—'],
       ['Phone', phone || '—'],
       ['OK to contact', body.contactConsent === true ? 'yes' : 'no'],
       ['Anything else', anythingElse || '—'],
     ],
     to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
-    replyTo: undefined,
-    data: { topic: 'welcome', name, interests, phone: phone || null },
+    replyTo: email || undefined,
+    data: { topic: 'welcome', name, interests, email: email || null, phone: phone || null },
     sheet: { tab: 'Welcome card', columns: WELCOME_SHEET_COLUMNS },
   });
 }
