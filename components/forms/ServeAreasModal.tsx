@@ -71,14 +71,16 @@ export function ServeAreasModal({ open, onClose }: { open: boolean; onClose: () 
           <IconClose size={18} />
         </button>
         <h2 className={`${styles.heading} display-heading`}>Ways to serve</h2>
-        <ul className={styles.list}>
-          {SERVE_AREAS.map((a) => (
-            <li key={a.value} className={styles.item}>
-              <h3 className={styles.itemTitle}>{a.label}</h3>
-              <p className={styles.itemText}>{a.description}</p>
-            </li>
+        <p className={styles.intro}>Here&apos;s a closer look at each one, so you know what you&apos;re saying yes to.</p>
+        <div className={styles.grid}>
+          {SERVE_AREAS.map((a, i) => (
+            <div key={a.value} className={styles.card}>
+              <span className={styles.num}>{String(i + 1).padStart(2, '0')}</span>
+              <h3 className={styles.cardTitle}>{a.label}</h3>
+              <p className={styles.cardText}>{a.description}</p>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>,
     document.body,

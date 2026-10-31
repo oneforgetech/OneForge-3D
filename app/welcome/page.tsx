@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { WelcomeConnectForm } from '@/components/forms/WelcomeConnectForm';
 import { WelcomeServeForm } from '@/components/forms/WelcomeServeForm';
-import { PageHero, PageShell, Section } from '@/components/site/Site';
+import { PageHero, PageShell, Pill, Section } from '@/components/site/Site';
 import p from '@/components/site/Page.module.css';
 import w from '@/components/site/Welcome.module.css';
+import { WelcomeBankDetails } from '@/components/ui/WelcomeBankDetails';
+import { WelcomeInviteFriend } from '@/components/ui/WelcomeInviteFriend';
 
 // Unlisted on purpose — reached only by the QR code on the physical guest card, never
 // linked from the site's own nav/footer. noindex (and left out of sitemap.ts) so it
@@ -41,6 +43,19 @@ export default function Page() {
           Tell us where you&apos;d like to help. Someone will call you within a week for a ten-minute chat.
         </p>
         <WelcomeServeForm />
+      </Section>
+
+      <Section>
+        <p className={`kicker ${p.kick}`}>Give</p>
+        <h2 className={`${p.h2} ${p.wide} display-heading`}>Give.</h2>
+        <p className={p.lead}>
+          Your giving keeps the doors open for the next person who walks in. Give if and when it means something to you.
+        </p>
+        <div className={p.actions}>
+          <Pill href="/give">Ways to give</Pill>
+          <WelcomeBankDetails />
+        </div>
+        <WelcomeInviteFriend />
       </Section>
     </PageShell>
   );

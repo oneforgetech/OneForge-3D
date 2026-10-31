@@ -1,0 +1,32 @@
+.band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-top: 48px;
+  padding: 28px 32px;
+  border-radius: 20px;
+  border: 1.5px dashed var(--glass-border-on-dark);
+}
+
+.text {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(20px, 2vw, 26px);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--of-teal);
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
