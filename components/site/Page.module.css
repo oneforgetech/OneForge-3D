@@ -353,6 +353,10 @@
   opacity: 0.92;
 }
 
+.quote + .quote {
+  margin-top: 16px;
+}
+
 /* ---- accordion ---- */
 .accordion {
   margin-top: 40px;

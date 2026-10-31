@@ -32,9 +32,18 @@ export default function Page() {
               <span className={p.leaderName}>Boye Oloyede</span>
               <span className={p.leaderRole}>Lead Pastor</span>
               <p className={p.quote}>
-                You don’t need to have anything figured out to walk in here. Bring your work, your questions and your doubts
-                with you. God takes you exactly as you are, and loves you too much to leave you there. So do we. I’ll look
-                for you on Sunday.
+                I believe your faith should have something to say about every part of your life. Not just what you do on
+                Sunday, but how you make decisions on Monday, how you treat people, how you do your work, and who you’re
+                becoming along the way.
+              </p>
+              <p className={p.quote}>That’s part of why ONEFORGE exists.</p>
+              <p className={p.quote}>
+                You don’t have to have everything figured out to begin. You can come with your faith, your questions, your
+                hopes and even your uncertainties. There’s room for you here.
+              </p>
+              <p className={p.quote}>
+                My hope is that as we grow together in Christ, you’ll build strong character, sharpen your competence, expand
+                your capacity, and lead with purpose in every room that matters.
               </p>
             </div>
           </div>
