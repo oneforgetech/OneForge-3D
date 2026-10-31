@@ -7,7 +7,7 @@ import { CHURCH_ADDRESS, SITE_URL } from './church';
  * Preview it locally at /welcome/thank-you-email.
  */
 
-const BODY_LINE = "Thanks for letting us know you came. We've got it, and a real person on our team will follow up if you asked us to.";
+const BODY_LINE = "Thanks for letting us know you came. We've got it, and a real person on our team will reach out if you permitted us to.";
 const SIGNOFF = 'See you around,';
 const SIGNER = 'The ONEFORGE Team';
 const TAGLINE = 'Forged to lead. Called to impact.';
@@ -31,6 +31,9 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 export function welcomeConnectReplyEmail({ firstName, assetBase = SITE_URL }: { firstName: string; assetBase?: string }) {
   const first = firstName.trim();
   const subject = first ? `Thanks, ${first} — we've got it.` : "Thanks — we've got it.";
+  // The heading's tight letter-spacing can visually crowd a plain space right after the comma, so the
+  // HTML version uses a non-breaking space there (the plain-text subject/body above is unaffected).
+  const headingHtml = first ? `Thanks,&nbsp;${esc(first)} — we've got it.` : 'Thanks — we&#39;ve got it.';
   const greeting = `Hi ${first || 'there'},`;
   const site = SITE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
@@ -67,7 +70,7 @@ export function welcomeConnectReplyEmail({ firstName, assetBase = SITE_URL }: { 
         </tr>
         <tr>
           <td class="card" bgcolor="${C.card}" style="background:${C.card};background-image:radial-gradient(circle at 100% 0%, rgba(255,140,0,0.16), rgba(255,140,0,0) 46%), linear-gradient(165deg, #10393a 0%, ${C.card} 55%, #0b2424 100%);border:1px solid ${C.line};border-radius:28px;padding:40px 40px 36px;">
-            <h1 class="title" style="margin:0 0 24px;font-family:${DISPLAY};font-weight:800;font-size:36px;line-height:1.08;letter-spacing:-0.03em;color:${C.heading};">${esc(subject)}</h1>
+            <h1 class="title" style="margin:0 0 24px;font-family:${DISPLAY};font-weight:800;font-size:36px;line-height:1.08;letter-spacing:-0.03em;color:${C.heading};">${headingHtml}</h1>
             <p style="margin:0 0 18px;font-family:${BODY_FONT};font-size:17px;line-height:1.65;color:${C.body};">${esc(greeting)}</p>
             <p style="margin:0 0 28px;font-family:${BODY_FONT};font-size:17px;line-height:1.65;color:${C.body};">${esc(BODY_LINE)}</p>
             <p style="margin:0;font-family:${BODY_FONT};font-size:17px;line-height:1.5;color:${C.body};">${esc(SIGNOFF)}<br><strong style="color:${C.heading};">${esc(SIGNER)}</strong></p>
