@@ -3,6 +3,7 @@ import { CHURCH_EMAIL } from '@/lib/church';
 import { PARTNER_EMAIL, PARTNER_GIFT_OPTIONS } from '@/lib/partner';
 import { partnerThanksEmail } from '@/lib/partner-email';
 import { SERVE_AREAS } from '@/lib/serve';
+import { STAGE_OF_LIFE_OPTIONS } from '@/lib/stageOfLife';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -51,7 +52,7 @@ const HELLO_SHEET_COLUMNS = [
   'OK to add to the WhatsApp community',
 ];
 
-const WELCOME_CONNECT_SHEET_COLUMNS = ['First name', 'Last name', 'Phone', 'Email', 'Message', 'OK to contact'];
+const WELCOME_CONNECT_SHEET_COLUMNS = ['First name', 'Last name', 'Phone', 'Email', 'Stage of life', 'Message', 'OK to contact'];
 const WELCOME_SERVE_SHEET_COLUMNS = ['First name', 'Phone', 'Email', 'Areas', 'OK to contact'];
 
 const MAX_BODY_BYTES = 12_000;
@@ -232,11 +233,15 @@ async function welcomeConnect(body: Record<string, unknown>) {
   const email = clean(body.email, LIMITS.email);
   const phone = clean(body.phone, 30);
   const phoneDigits = phone.replace(/\D/g, '');
+  const stageOfLife = clean(body.stageOfLife, LIMITS.short);
   const message = clean(body.message, LIMITS.text);
   if (!firstName) return fail(400, 'first_name_required');
   if (!lastName) return fail(400, 'last_name_required');
   if (email && !EMAIL_RE.test(email)) return fail(400, 'email_invalid');
   if (phone && (phoneDigits.length < 7 || phoneDigits.length > 15 || !PHONE_RE.test(phone))) return fail(400, 'phone_invalid');
+  if (!STAGE_OF_LIFE_OPTIONS.some((s) => s.value === stageOfLife)) return fail(400, 'stage_of_life_required');
+
+  const stageOfLifeLabel = STAGE_OF_LIFE_OPTIONS.find((s) => s.value === stageOfLife)!.label;
 
   return deliver({
     subject: `[ONEFORGE] welcome — connect — ${firstName} ${lastName}`,
@@ -245,12 +250,13 @@ async function welcomeConnect(body: Record<string, unknown>) {
       ['Last name', lastName],
       ['Phone', phone || '—'],
       ['Email', email || '—'],
+      ['Stage of life', stageOfLifeLabel],
       ['Message', message || '—'],
       ['OK to contact', body.contactConsent === true ? 'yes' : 'no'],
     ],
     to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
     replyTo: email || undefined,
-    data: { topic: 'welcome-connect', firstName, lastName, email: email || null, phone: phone || null },
+    data: { topic: 'welcome-connect', firstName, lastName, email: email || null, phone: phone || null, stageOfLife },
     sheet: { tab: 'Welcome connect', columns: WELCOME_CONNECT_SHEET_COLUMNS },
   });
 }

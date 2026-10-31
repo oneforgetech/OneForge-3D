@@ -20,6 +20,7 @@ export default function Page() {
         kicker="Welcome"
         title={`We're glad\nyou're here!`}
         titleClassName={w.heroTitle}
+        className={w.heroCompact}
         lead="You don't have to have it all figured out to belong."
         image="/images/risen/group-cast.jpg"
         alt="The ONEFORGE community gathered together"

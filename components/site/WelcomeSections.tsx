@@ -21,7 +21,7 @@ export function WelcomeSections() {
 
   return (
     <>
-      <Section>
+      <Section className={styles.sectionTight}>
         <div className={styles.grid}>
           <div className={styles.card}>
             <h2 className={`${styles.cardTitle} display-heading`}>Connect with us.</h2>

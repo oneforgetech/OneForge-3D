@@ -92,6 +92,7 @@ export function PageHero({
   kicker,
   centred,
   titleClassName,
+  className,
   children,
 }: {
   title: string;
@@ -104,6 +105,8 @@ export function PageHero({
   centred?: boolean;
   /** Extra class for the title, e.g. to cap its size so a forced line break (\n + pre-line) holds at every width. */
   titleClassName?: string;
+  /** Extra class for the hero section itself, e.g. to shrink its height on a page that doesn't section-snap. */
+  className?: string;
   /** Extra hero content under the lead (buttons, a footnote). */
   children?: React.ReactNode;
 }) {
@@ -134,7 +137,7 @@ export function PageHero({
   }, []);
 
   return (
-    <section ref={ref} className={`${styles.hero} ${centred ? styles.heroCentred : ''}`} data-snap>
+    <section ref={ref} className={`${styles.hero} ${centred ? styles.heroCentred : ''} ${className ?? ''}`} data-snap>
       <div className={styles.heroText}>
         {kicker && <p className={`kicker ${styles.kick} ${styles.heroKicker}`}>{kicker}</p>}
         <h1 className={`${styles.heroTitle} ${titleClassName ?? ''} display-heading`}>{title}</h1>
@@ -191,9 +194,20 @@ export function Reveal({ children, delay = 0, className }: { children: React.Rea
   );
 }
 
-export function Section({ children, band, id }: { children: React.ReactNode; band?: boolean; id?: string }) {
+export function Section({
+  children,
+  band,
+  id,
+  className,
+}: {
+  children: React.ReactNode;
+  band?: boolean;
+  id?: string;
+  /** Extra class for the section itself, e.g. to override its padding. */
+  className?: string;
+}) {
   return (
-    <section id={id} data-snap className={`${styles.section} ${band ? styles.band : ''}`}>
+    <section id={id} data-snap className={`${styles.section} ${band ? styles.band : ''} ${className ?? ''}`}>
       <div className={`${styles.inner} ${styles.depth}`}>{children}</div>
     </section>
   );

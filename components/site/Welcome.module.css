@@ -7,6 +7,21 @@
   font-size: clamp(46px, 8.6vw, 118px);
 }
 
+/* Page.module's .hero is min-height: 100svh — sized to fill the screen for the
+   one-section-per-screen pager used elsewhere. /welcome doesn't snap (PageShell
+   snap={false}), so that forced full-screen height just left a wall of empty space
+   before the cards. Shrunk to its content height, with the bottom padding cut down too. */
+.heroCompact {
+  min-height: auto;
+  padding-bottom: 32px;
+}
+
+/* The cards' own Section keeps the shared horizontal gutter and bottom padding, but
+   doesn't need the usual large top padding (it's not re-centering a full screen). */
+.sectionTight {
+  padding-top: clamp(16px, 3vw, 40px);
+}
+
 /* Connect / Serve / Give: two cards per row. The odd one out (Give, with 3 cards total)
    spans the full row via .cardWide instead of leaving a half-empty row. */
 .grid {

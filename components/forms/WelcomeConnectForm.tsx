@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import { IconCheck } from '@/components/ui/icons';
 import { track } from '@/lib/analytics';
 import { CHURCH_EMAIL } from '@/lib/church';
+import { STAGE_OF_LIFE_OPTIONS } from '@/lib/stageOfLife';
 import styles from './WelcomeForm.module.css';
 
-type Errors = Partial<Record<'firstName' | 'lastName', string>>;
+type Errors = Partial<Record<'firstName' | 'lastName' | 'stageOfLife', string>>;
 
 /**
  * "Connect with us" on the /welcome page: a short way to say you came, with room for a
@@ -18,6 +19,7 @@ export function WelcomeConnectForm() {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [stageOfLife, setStageOfLife] = useState('');
   const [message, setMessage] = useState('');
   const [contactConsent, setContactConsent] = useState(false);
   const [honeypot, setHoneypot] = useState('');
@@ -30,11 +32,13 @@ export function WelcomeConnectForm() {
 
   const firstNameRef = useRef<HTMLInputElement>(null);
   const lastNameRef = useRef<HTMLInputElement>(null);
+  const stageOfLifeRef = useRef<HTMLFieldSetElement>(null);
 
   function validate(): Errors {
     const next: Errors = {};
     if (!firstName.trim()) next.firstName = 'Tell us your first name.';
     if (!lastName.trim()) next.lastName = 'Tell us your last name.';
+    if (!stageOfLife) next.stageOfLife = 'Choose the one that fits best.';
     return next;
   }
 
@@ -46,6 +50,7 @@ export function WelcomeConnectForm() {
     if (Object.keys(nextErrors).length > 0) {
       if (nextErrors.firstName) firstNameRef.current?.focus();
       else if (nextErrors.lastName) lastNameRef.current?.focus();
+      else if (nextErrors.stageOfLife) stageOfLifeRef.current?.focus();
       return;
     }
 
@@ -60,6 +65,7 @@ export function WelcomeConnectForm() {
           lastName,
           phone: phone || undefined,
           email: email || undefined,
+          stageOfLife,
           message: message || undefined,
           contactConsent: phone || email ? contactConsent : undefined,
           website: honeypot,
@@ -162,6 +168,30 @@ export function WelcomeConnectForm() {
           Yes, ONEFORGE may contact me.
         </label>
       )}
+
+      <fieldset
+        ref={stageOfLifeRef}
+        className={styles.field}
+        tabIndex={-1}
+        aria-describedby={errors.stageOfLife ? 'stageOfLife-error' : undefined}
+      >
+        <legend className={styles.label}>Stage of life</legend>
+        <span className={styles.hint}>Helps us understand who&apos;s coming through the door.</span>
+        <div className={styles.pillGroup}>
+          {STAGE_OF_LIFE_OPTIONS.map((s) => (
+            <label key={s.value} className={styles.pill}>
+              <input
+                type="radio"
+                name="stageOfLife"
+                checked={stageOfLife === s.value}
+                onChange={() => setStageOfLife(s.value)}
+              />
+              {s.label}
+            </label>
+          ))}
+        </div>
+        {errors.stageOfLife && <span id="stageOfLife-error" className={styles.error}>{errors.stageOfLife}</span>}
+      </fieldset>
 
       <div className={styles.field}>
         <label className={styles.label} htmlFor="message">Anything you&apos;d like to tell us? (optional)</label>
