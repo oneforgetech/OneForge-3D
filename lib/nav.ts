@@ -3,8 +3,8 @@ import { LIVE_URL } from './church';
 export type NavItem = { label: string; href: string; external?: boolean };
 export type NavGroup = { id: string; label: string; href: string; items: NavItem[] };
 
-// Discover | ONEFORGE | Listen | Visit. Each word is an invitation to experience
-// something, not a church-insider label.
+// Discover | Watch (left) · ONEFORGE (centre) · Visit | Next Steps (right). Each word is
+// an invitation to experience something, not a church-insider label.
 export const NAV_GROUPS: NavGroup[] = [
   {
     id: 'discover',
@@ -17,12 +17,12 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    id: 'listen',
-    label: 'Listen',
+    id: 'watch',
+    label: 'Watch',
     href: '/listen',
     items: [
-      { label: 'Messages', href: '/listen#messages' },
       { label: 'Join Us Live', href: LIVE_URL, external: true },
+      { label: 'Messages', href: '/listen#messages' },
     ],
   },
   {
@@ -40,5 +40,6 @@ export const NAV_GROUPS: NavGroup[] = [
 // Lives in the menu and footer only — deliberately not on the home page.
 export const NAV_MORE: NavItem[] = [
   { label: 'Give', href: '/give' },
+  { label: 'Next Steps', href: '/welcome' },
   { label: 'Say hello', href: '/connect' },
 ];

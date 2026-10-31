@@ -1,17 +1,15 @@
-import type { Metadata } from 'next';
 import { PageHero, PageShell } from '@/components/site/Site';
 import w from '@/components/site/Welcome.module.css';
 import { WelcomeSections } from '@/components/site/WelcomeSections';
+import { buildMetadata } from '@/lib/metadata';
 
-// Unlisted on purpose — reached only by the QR code on the physical guest card, never
-// linked from the site's own nav/footer. noindex (and left out of sitemap.ts) so it
-// doesn't show up in search either: there's nothing here for anyone who isn't already
-// holding the card.
-export const metadata: Metadata = {
-  title: 'Welcome · ONEFORGE Church',
-  description: "We're glad you're here. Let us know how we can help.",
-  robots: { index: false, follow: false },
-};
+// The guest card's QR code lands here too, but it's also a first-class page now:
+// linked from the header ("Next Steps") and the footer/menu, and in the sitemap.
+export const metadata = buildMetadata({
+  title: 'Your Next Step · ONEFORGE Church',
+  description: "We're glad you're here. Connect with us, find a place to serve, or give — whatever your next step is.",
+  path: '/welcome',
+});
 
 export default function Page() {
   return (

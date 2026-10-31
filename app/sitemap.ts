@@ -8,6 +8,7 @@ const ROUTES: { path: string; changeFrequency: MetadataRoute.Sitemap[number]['ch
   { path: '/visit', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/give', changeFrequency: 'monthly', priority: 0.6 },
   { path: '/connect', changeFrequency: 'monthly', priority: 0.6 },
+  { path: '/welcome', changeFrequency: 'monthly', priority: 0.6 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

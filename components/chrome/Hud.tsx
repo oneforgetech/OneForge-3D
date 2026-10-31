@@ -39,7 +39,7 @@ function Group({ group, cta }: { group: NavGroup; cta?: boolean }) {
   );
 }
 
-/** Discover | ONEFORGE | Listen | Visit — fixed across every page. */
+/** Discover | Watch | ONEFORGE | Visit | Next Steps — fixed across every page. */
 export function Hud() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -47,7 +47,7 @@ export function Hud() {
   // bits appear after hydration instead of risking a server/client mismatch.
   const home = useMounted() && pathname === '/';
   const goTo = useWorldStore((s) => s.goTo);
-  const [discover, listen, visit] = NAV_GROUPS;
+  const [discover, watch, visit] = NAV_GROUPS;
 
   return (
     <>
@@ -60,8 +60,9 @@ export function Hud() {
             </span>
             <span className={styles.menuLabel}>Menu</span>
           </button>
-          <nav aria-label="Discover" className={styles.side}>
+          <nav aria-label="Discover and watch" className={styles.side}>
             <Group group={discover} />
+            <Group group={watch} />
           </nav>
         </div>
 
@@ -78,10 +79,13 @@ export function Hud() {
         </Link>
 
         <div className={styles.right}>
-          <nav aria-label="Listen and visit" className={styles.side}>
-            <Group group={listen} />
-          </nav>
           <Group group={visit} cta />
+          <Link href="/welcome" className={styles.visit} data-cursor="Go">
+            Next Steps
+            <span className={styles.visitIcon}>
+              <IconArrowUpRight size={15} />
+            </span>
+          </Link>
         </div>
 
         {home && <span className={styles.progress} aria-hidden="true" />}
