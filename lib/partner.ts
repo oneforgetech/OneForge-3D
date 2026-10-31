@@ -79,7 +79,8 @@ export type PartnerAccount = {
   bank: string;
   number: string;
   currency: 'NGN' | 'USD';
-  logo: { src: string; width: number; height: number };
+  /** Omitted when we don't have an official logo asset for the bank yet — the card just shows its name instead. */
+  logo?: { src: string; width: number; height: number };
 };
 
 const LOGOS = {
@@ -92,6 +93,7 @@ export const PARTNER_NGN_ACCOUNTS: PartnerAccount[] = [
   { bank: 'Providus Unity Bank', number: '1310548972', currency: 'NGN', logo: LOGOS.providus },
   { bank: 'Premium Trust Bank', number: '0010246634', currency: 'NGN', logo: LOGOS.premiumTrust },
   { bank: 'FCMB', number: '1047269330', currency: 'NGN', logo: LOGOS.fcmb },
+  { bank: 'Abbey Bank', number: '2065280223', currency: 'NGN' },
 ];
 
 export const PARTNER_USD_ACCOUNT: PartnerAccount = {

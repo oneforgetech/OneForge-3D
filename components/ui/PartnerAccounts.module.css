@@ -11,7 +11,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 18px;
 }
 
@@ -76,6 +76,15 @@
 .logo img {
   height: 40px;
   width: auto;
+}
+
+/* no official logo asset for this bank yet — its name stands in for one, on the same white tile */
+.logoFallback {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--of-forest-black);
 }
 
 .bank {

@@ -14,7 +14,7 @@ import {
 } from '@/lib/partner';
 import styles from './PartnerAccounts.module.css';
 
-/** The /partner page's bank details: three naira accounts, then the dollar account for giving from abroad. */
+/** The /partner page's bank details: the naira accounts, then the dollar account for giving from abroad. */
 export function PartnerAccounts() {
   return (
     <div className={styles.wrap}>
@@ -64,7 +64,11 @@ function BankCard({ account, wide, children }: { account: PartnerAccount; wide?:
     <div className={`${styles.card} ${wide ? styles.wide : ''} glass-on-dark`}>
       <div className={styles.main}>
         <span className={styles.logo}>
-          <Image src={account.logo.src} alt={`${account.bank} logo`} width={account.logo.width} height={account.logo.height} />
+          {account.logo ? (
+            <Image src={account.logo.src} alt={`${account.bank} logo`} width={account.logo.width} height={account.logo.height} />
+          ) : (
+            <span className={styles.logoFallback}>{account.bank}</span>
+          )}
         </span>
         <p className={styles.bank}>{account.bank}</p>
         <p className={styles.number}>{account.number}</p>

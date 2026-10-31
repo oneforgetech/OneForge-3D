@@ -34,6 +34,7 @@ export const GIVING_ACCOUNTS = [
   { bank: 'FCMB', number: '1047269330' },
   { bank: 'Providus Unity Bank', number: '1310548972' },
   { bank: 'Premium Trust Bank', number: '0010246634' },
+  { bank: 'Abbey Bank', number: '2065280223' },
 ] as const;
 
 /** The ONEFORGE YouTube channel (used for live services; messages stay on Spotify). */
