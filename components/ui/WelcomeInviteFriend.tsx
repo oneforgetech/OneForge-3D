@@ -1,10 +1,10 @@
 import { IconArrowUpRight } from '@/components/ui/icons';
-import { CHURCH_ADDRESS_STRUCTURED, CHURCH_SUNDAY_TIME, SITE_URL } from '@/lib/church';
+import { SITE_URL } from '@/lib/church';
 import styles from './WelcomeInviteFriend.module.css';
 
 const INVITE_TEXT =
-  `I've just found ONEFORGE and I think you'd like it. Sundays at ${CHURCH_SUNDAY_TIME} in ` +
-  `${CHURCH_ADDRESS_STRUCTURED.addressLocality}, ${CHURCH_ADDRESS_STRUCTURED.addressRegion}. Come with me? ${SITE_URL}/visit`;
+  "I thought of you. I've started going to ONEFORGE in Ogudu, and I think you'd really like it. Sundays at 9am. " +
+  `Come with me next Sunday? I'll save you a seat.\n\n${SITE_URL}/visit`;
 
 /** "Bring someone next Sunday" banner at the end of /welcome: a pre-filled WhatsApp share. */
 export function WelcomeInviteFriend() {

@@ -6,7 +6,7 @@ import { buildMetadata } from '@/lib/metadata';
 
 export const metadata = buildMetadata({
   title: 'Give · ONEFORGE Church, Lagos',
-  description: 'It costs money to keep ONEFORGE going. Bank details for giving, with no pressure and no guilt.',
+  description: 'Your generosity helps create room for people to encounter Jesus, grow in Christ, and carry His presence into the world.',
   path: '/give',
 });
 
