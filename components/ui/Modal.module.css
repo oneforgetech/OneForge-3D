@@ -1,0 +1,83 @@
+/* The page stays visible behind a light, blurred veil. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: rgba(6, 22, 22, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fade 0.25s ease both;
+}
+
+.dialog {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 44px;
+  border-radius: 28px;
+  border: 1px solid var(--glass-border-on-dark);
+  background: var(--of-forest-black);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  animation: rise 0.35s var(--ease-standard) both;
+}
+
+.dialog.wide {
+  width: min(900px, 100%);
+}
+
+.close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--glass-border-on-dark);
+  border-radius: 50%;
+  background: rgba(13, 43, 43, 0.8);
+  color: var(--of-mint-white);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--of-teal);
+  color: var(--of-forest-black);
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--of-teal);
+  outline-offset: 2px;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+
+@media (max-width: 600px) {
+  .dialog {
+    padding: 32px 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .dialog {
+    animation: none;
+  }
+}

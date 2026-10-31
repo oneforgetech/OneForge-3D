@@ -9,11 +9,19 @@ import { createPager, createTouchAssist } from '@/lib/pager';
 import styles from './Page.module.css';
 
 /** Inner-page frame: ember backdrop + pointer tilt for [data-tilt] slabs. */
-export function PageShell({ children }: { children: React.ReactNode }) {
+export function PageShell({
+  children,
+  snap = true,
+}: {
+  children: React.ReactNode;
+  /** One flick/swipe = one section (see below). Off for pages built as an ordinary scrolling grid of cards rather than discrete full sections, e.g. /welcome. */
+  snap?: boolean;
+}) {
   // One flick = one section. Mouse/keyboard: our pager steps section to section (and screen by
   // screen inside tall sections). Touch: native CSS scroll-snap (see globals.css), which
   // handles swipes and momentum properly. Reduced motion keeps ordinary scrolling.
   useEffect(() => {
+    if (!snap) return;
     const html = document.documentElement;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (window.matchMedia('(pointer: coarse)').matches) {
@@ -26,7 +34,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
     }
     if (reduced) return;
     return createPager();
-  }, []);
+  }, [snap]);
 
   // Depth: each section's content flies in from behind as it enters and recedes as it leaves.
   // Only the edges animate, so tall sections stay fully readable while you're inside them.

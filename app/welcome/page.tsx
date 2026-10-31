@@ -1,11 +1,7 @@
 import type { Metadata } from 'next';
-import { WelcomeConnectForm } from '@/components/forms/WelcomeConnectForm';
-import { WelcomeServeForm } from '@/components/forms/WelcomeServeForm';
-import { PageHero, PageShell, Pill, Section } from '@/components/site/Site';
-import p from '@/components/site/Page.module.css';
+import { PageHero, PageShell } from '@/components/site/Site';
 import w from '@/components/site/Welcome.module.css';
-import { WelcomeBankDetails } from '@/components/ui/WelcomeBankDetails';
-import { WelcomeInviteFriend } from '@/components/ui/WelcomeInviteFriend';
+import { WelcomeSections } from '@/components/site/WelcomeSections';
 
 // Unlisted on purpose — reached only by the QR code on the physical guest card, never
 // linked from the site's own nav/footer. noindex (and left out of sitemap.ts) so it
@@ -19,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <PageShell>
+    <PageShell snap={false}>
       <PageHero
         kicker="Welcome"
         title={`We're glad\nyou're here!`}
@@ -29,34 +25,7 @@ export default function Page() {
         alt="The ONEFORGE community gathered together"
         centred
       />
-      <Section>
-        <p className={`kicker ${p.kick}`}>Connect</p>
-        <h2 className={`${p.h2} ${p.wide} display-heading`}>Connect with us.</h2>
-        <WelcomeConnectForm />
-      </Section>
-
-      <Section>
-        <p className={`kicker ${p.kick}`}>Serve</p>
-        <h2 className={`${p.h2} ${p.wide} display-heading`}>Serve with us.</h2>
-        <p className={p.lead}>You don&apos;t have to be ready. You just have to be willing.</p>
-        <p className={p.lead}>
-          Tell us where you&apos;d like to help. Someone will call you within a week for a ten-minute chat.
-        </p>
-        <WelcomeServeForm />
-      </Section>
-
-      <Section>
-        <p className={`kicker ${p.kick}`}>Give</p>
-        <h2 className={`${p.h2} ${p.wide} display-heading`}>Give.</h2>
-        <p className={p.lead}>
-          Your giving keeps the doors open for the next person who walks in. Give if and when it means something to you.
-        </p>
-        <div className={p.actions}>
-          <Pill href="/give">Ways to give</Pill>
-          <WelcomeBankDetails />
-        </div>
-        <WelcomeInviteFriend />
-      </Section>
+      <WelcomeSections />
     </PageShell>
   );
 }

@@ -6,3 +6,87 @@
 .heroTitle {
   font-size: clamp(46px, 8.6vw, 118px);
 }
+
+/* Connect / Serve / Give: two cards per row. The odd one out (Give, with 3 cards total)
+   spans the full row via .cardWide instead of leaving a half-empty row. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 36px;
+  border-radius: 28px;
+  border: 1.5px solid var(--glass-border-on-dark);
+  background: var(--glass-bg-on-dark);
+}
+
+.cardWide {
+  grid-column: 1 / -1;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: clamp(26px, 2.6vw, 36px);
+}
+
+.cardText {
+  margin: 0;
+  max-width: 48ch;
+  font-size: 16px;
+  line-height: 1.55;
+  opacity: 0.85;
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 22px;
+  margin-top: 6px;
+}
+
+.cardButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 34px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--of-orange);
+  color: var(--of-forest-black);
+  font-weight: 700;
+  font-size: 17px;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.cardButton:hover {
+  transform: translateY(-2px);
+}
+
+.cardLink {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--of-teal);
+  font: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.cardLink:hover {
+  text-decoration: underline;
+}

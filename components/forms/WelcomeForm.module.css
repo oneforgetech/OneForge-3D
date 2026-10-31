@@ -120,28 +120,6 @@
   opacity: 0.92;
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px 22px;
-}
-
-.link {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--of-teal);
-  font: inherit;
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.link:hover {
-  text-decoration: underline;
-}
-
 .checkbox {
   grid-column: 1 / -1;
   display: flex;
