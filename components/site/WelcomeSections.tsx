@@ -5,7 +5,6 @@ import { ServeAreasModal } from '@/components/forms/ServeAreasModal';
 import { WelcomeConnectForm } from '@/components/forms/WelcomeConnectForm';
 import { WelcomeFormModal } from '@/components/forms/WelcomeFormModal';
 import { WelcomeServeForm } from '@/components/forms/WelcomeServeForm';
-import { WelcomeBankDetails } from '@/components/ui/WelcomeBankDetails';
 import { WelcomeInviteFriend } from '@/components/ui/WelcomeInviteFriend';
 import { Pill, Section } from './Site';
 import styles from './Welcome.module.css';
@@ -55,7 +54,6 @@ export function WelcomeSections() {
             </p>
             <div className={styles.cardActions}>
               <Pill href="/give">Ways to give</Pill>
-              <WelcomeBankDetails />
             </div>
           </div>
         </div>
