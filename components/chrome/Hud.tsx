@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMounted } from '@/lib/useMounted';
-import { NAV_GROUPS, type NavGroup } from '@/lib/nav';
+import { NAV_GROUPS, NAV_MORE, type NavGroup } from '@/lib/nav';
 import { useWorldStore } from '@/lib/world/store';
 import { IconArrowUpRight } from '@/components/ui/icons';
 import { Menu } from './Menu';
@@ -39,7 +39,7 @@ function Group({ group, cta }: { group: NavGroup; cta?: boolean }) {
   );
 }
 
-/** Discover | Watch | ONEFORGE | Visit | Next Steps — fixed across every page. */
+/** Discover | Watch | ONEFORGE | Give | Visit | Next Steps — fixed across every page. */
 export function Hud() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -48,6 +48,7 @@ export function Hud() {
   const home = useMounted() && pathname === '/';
   const goTo = useWorldStore((s) => s.goTo);
   const [discover, watch, visit] = NAV_GROUPS;
+  const give = NAV_MORE.find((item) => item.label === 'Give')!;
 
   return (
     <>
@@ -79,6 +80,12 @@ export function Hud() {
         </Link>
 
         <div className={styles.right}>
+          <Link href={give.href} className={styles.visit} data-cursor="Go">
+            Give
+            <span className={styles.visitIcon}>
+              <IconArrowUpRight size={15} />
+            </span>
+          </Link>
           <Group group={visit} cta />
           <Link href="/welcome" className={styles.visit} data-cursor="Go">
             Next Steps
