@@ -4,6 +4,7 @@ import { PARTNER_EMAIL, PARTNER_GIFT_OPTIONS } from '@/lib/partner';
 import { partnerThanksEmail } from '@/lib/partner-email';
 import { SERVE_AREAS } from '@/lib/serve';
 import { STAGE_OF_LIFE_OPTIONS } from '@/lib/stageOfLife';
+import { welcomeConnectReplyEmail } from '@/lib/welcome-email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,6 +21,12 @@ export const dynamic = 'force-dynamic';
  *   - Webhook:           CONNECT_WEBHOOK_URL  (Slack / Zapier / Make…)
  * With none set, production answers 503 so nobody is ever told "we've got it" when we haven't.
  * (In local development it just logs, so the form can be tried without keys.)
+ *
+ * Two forms also send something back, both needing just RESEND_API_KEY (either reply is skipped —
+ * not a 503 — if it alone fails, since the entry itself still went through): the partner page thanks
+ * the giver (lib/partner-email.ts, from PARTNER_FROM_EMAIL / CONNECT_FROM_EMAIL), and "Connect with
+ * us" on /welcome sends a short auto-reply (lib/welcome-email.ts, always from hello@oneforge.org —
+ * see sendWelcomeConnectReply — regardless of CONNECT_FROM_EMAIL) whenever an email address was given.
  *
  * Protections: same-origin check, JSON-only with a size cap, strict field validation and length
  * caps, a honeypot and a minimum-fill-time check (both answered with a quiet success so bots learn
@@ -243,7 +250,7 @@ async function welcomeConnect(body: Record<string, unknown>) {
 
   const stageOfLifeLabel = STAGE_OF_LIFE_OPTIONS.find((s) => s.value === stageOfLife)!.label;
 
-  return deliver({
+  const response = await deliver({
     subject: `[ONEFORGE] welcome — connect — ${firstName} ${lastName}`,
     fields: [
       ['First name', firstName],
@@ -259,6 +266,34 @@ async function welcomeConnect(body: Record<string, unknown>) {
     data: { topic: 'welcome-connect', firstName, lastName, email: email || null, phone: phone || null, stageOfLife },
     sheet: { tab: 'Welcome connect', columns: WELCOME_CONNECT_SHEET_COLUMNS },
   });
+  // Only once the entry has reached us, so a failed send (which they may retry) never gets a double reply.
+  // Email is optional on this form, so there's often nowhere to send this.
+  if (response.ok && email) await sendWelcomeConnectReply({ firstName, email });
+  return response;
+}
+
+/**
+ * A short auto-reply to whoever filled in "Connect with us" (lib/welcome-email.ts). Needs Resend.
+ * Always sent from hello@oneforge.org specifically (not CONNECT_FROM_EMAIL, which other forms' staff
+ * notifications use and may be set to a personal address) — this one goes straight to a guest, so it
+ * comes from the church's own general inbox. If it fails, the entry still counts.
+ */
+async function sendWelcomeConnectReply({ firstName, email }: { firstName: string; email: string }) {
+  const { subject, html, text } = welcomeConnectReplyEmail({ firstName });
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) {
+    if (process.env.NODE_ENV !== 'production') console.log(`[welcome connect reply — dev only, nothing was sent]\nSubject: ${subject}\n\n${text}`);
+    return;
+  }
+  const sent = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: CHURCH_EMAIL, to: [email], subject, html, text, reply_to: CHURCH_EMAIL }),
+    signal: AbortSignal.timeout(8_000),
+  })
+    .then((r) => r.ok)
+    .catch(() => false);
+  if (!sent) console.error('[welcome connect] auto-reply not sent');
 }
 
 /** The /welcome guest card's "Serve with us" form: name + WhatsApp number + at least one area required. */
