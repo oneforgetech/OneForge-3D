@@ -80,14 +80,14 @@ export function Hud() {
         </Link>
 
         <div className={styles.right}>
-          <Link href={give.href} className={styles.visit} data-cursor="Go">
+          <Link href={give.href} className={`${styles.visit} ${styles.extraCta}`} data-cursor="Go">
             Give
             <span className={styles.visitIcon}>
               <IconArrowUpRight size={15} />
             </span>
           </Link>
           <Group group={visit} cta />
-          <Link href="/welcome" className={styles.visit} data-cursor="Go">
+          <Link href="/welcome" className={`${styles.visit} ${styles.extraCta}`} data-cursor="Go">
             Next Steps
             <span className={styles.visitIcon}>
               <IconArrowUpRight size={15} />

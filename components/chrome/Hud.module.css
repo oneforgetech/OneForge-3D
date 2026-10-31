@@ -231,6 +231,15 @@
   }
 }
 
+/* Give + Visit + Next Steps together need ~600px: too tight for a phone in portrait
+   alongside the menu button and logo. Keep just Visit (the one CTA the header always
+   had); Give and Next Steps stay one tap away in the menu, and in the footer. */
+@media (max-width: 680px) {
+  .extraCta {
+    display: none;
+  }
+}
+
 @media (pointer: coarse) {
   .panel a {
     padding: 14px 16px;
