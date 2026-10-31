@@ -21,7 +21,8 @@ declare global {
 type Events = {
   connect_form_sent: { topic: string };
   partner_form_sent: { gift: string };
-  welcome_form_sent: Record<string, never>;
+  welcome_connect_form_sent: Record<string, never>;
+  welcome_serve_form_sent: Record<string, never>;
   copy_account_number: { bank: string; currency: string };
   invitation_video_open: Record<string, never>;
   listen_play: { episode: string };

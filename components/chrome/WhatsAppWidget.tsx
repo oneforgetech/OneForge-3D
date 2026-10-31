@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
 import { IconClose } from '@/components/ui/icons';
 import { WHATSAPP_COMMUNITY_URL } from '@/lib/church';
 import styles from './WhatsAppWidget.module.css';
@@ -18,21 +17,20 @@ function quietUntil(): number {
   }
 }
 
-/** Floating "Join our community" WhatsApp button: home page only, appears after 10 s, closable for 3 days. */
+/** Floating "Join our community" WhatsApp button: every page, appears after 10 s, closable for 3 days. */
 export function WhatsAppWidget() {
-  const onHome = usePathname() === '/';
   const [shown, setShown] = useState(false);
 
   useEffect(() => {
-    if (!onHome || Date.now() < quietUntil()) return;
+    if (Date.now() < quietUntil()) return;
     const id = window.setTimeout(() => setShown(true), DELAY_MS);
     return () => {
       window.clearTimeout(id);
       setShown(false);
     };
-  }, [onHome]);
+  }, []);
 
-  if (!onHome || !shown) return null;
+  if (!shown) return null;
 
   const close = () => {
     try {

@@ -2,9 +2,10 @@
  * ONEFORGE website forms → this Google Sheet.
  *
  * Every entry from the "Say hello" form (/connect), the partner page form (/partner) and the /welcome
- * guest card is added here as a new row, each form on its own tab ("Say hello", "Partner", "Welcome
- * card"). The tabs and their column headings are created automatically when the first entry arrives —
- * a new form, or a new field on an existing one, needs no change to this script.
+ * guest card's two forms is added here as a new row, each form on its own tab ("Say hello", "Partner",
+ * "Welcome connect", "Welcome serve"). The tabs and their column headings are created automatically
+ * when the first entry arrives — a new form, or a new field on an existing one, needs no change to
+ * this script.
  *
  * Setup (once, about 10 minutes):
  *   1. Create a new Google Sheet, e.g. "ONEFORGE form entries".

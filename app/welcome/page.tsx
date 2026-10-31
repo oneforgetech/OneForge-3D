@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
-import { WelcomeForm } from '@/components/forms/WelcomeForm';
+import { WelcomeConnectForm } from '@/components/forms/WelcomeConnectForm';
+import { WelcomeServeForm } from '@/components/forms/WelcomeServeForm';
 import { PageHero, PageShell, Section } from '@/components/site/Site';
+import p from '@/components/site/Page.module.css';
 import w from '@/components/site/Welcome.module.css';
 
 // Unlisted on purpose — reached only by the QR code on the physical guest card, never
@@ -26,7 +28,19 @@ export default function Page() {
         centred
       />
       <Section>
-        <WelcomeForm />
+        <p className={`kicker ${p.kick}`}>Connect</p>
+        <h2 className={`${p.h2} ${p.wide} display-heading`}>Connect with us.</h2>
+        <WelcomeConnectForm />
+      </Section>
+
+      <Section>
+        <p className={`kicker ${p.kick}`}>Serve</p>
+        <h2 className={`${p.h2} ${p.wide} display-heading`}>Serve with us.</h2>
+        <p className={p.lead}>You don&apos;t have to be ready. You just have to be willing.</p>
+        <p className={p.lead}>
+          Tell us where you&apos;d like to help. Someone will call you within a week for a ten-minute chat.
+        </p>
+        <WelcomeServeForm />
       </Section>
     </PageShell>
   );

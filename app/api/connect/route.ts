@@ -2,14 +2,15 @@ import { NextResponse } from 'next/server';
 import { CHURCH_EMAIL } from '@/lib/church';
 import { PARTNER_EMAIL, PARTNER_GIFT_OPTIONS } from '@/lib/partner';
 import { partnerThanksEmail } from '@/lib/partner-email';
-import { WELCOME_INTERESTS } from '@/lib/welcome';
+import { SERVE_AREAS } from '@/lib/serve';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/connect — the "Say hello" form, (topic "partner") the /partner page's
- * "Let us say thank you" form, and (topic "welcome") the /welcome guest card.
+ * "Let us say thank you" form, and the /welcome guest card's two forms: (topic
+ * "welcome-connect") "Connect with us" and (topic "welcome-serve") "Serve with us".
  *
  * Delivery (set at least one in production; see .env.example):
  *   - Email via Resend:  RESEND_API_KEY + CONNECT_FROM_EMAIL (+ CONNECT_TO_EMAIL, default hello@oneforge.org;
@@ -50,7 +51,8 @@ const HELLO_SHEET_COLUMNS = [
   'OK to add to the WhatsApp community',
 ];
 
-const WELCOME_SHEET_COLUMNS = ['Name', 'Interested in', 'Email', 'Phone', 'OK to contact', 'Anything else'];
+const WELCOME_CONNECT_SHEET_COLUMNS = ['First name', 'Last name', 'Phone', 'Email', 'Message', 'OK to contact'];
+const WELCOME_SERVE_SHEET_COLUMNS = ['First name', 'Phone', 'Email', 'Areas', 'OK to contact'];
 
 const MAX_BODY_BYTES = 12_000;
 const LIMITS = { name: 80, email: 120, text: 1500, short: 80 };
@@ -117,7 +119,8 @@ export async function POST(request: Request) {
   }
 
   if (body.topic === 'partner') return partner(body);
-  if (body.topic === 'welcome') return welcomeCard(body);
+  if (body.topic === 'welcome-connect') return welcomeConnect(body);
+  if (body.topic === 'welcome-serve') return welcomeServe(body);
 
   // 5) validate
   const firstName = clean(body.firstName, LIMITS.name);
@@ -222,37 +225,66 @@ async function sendPartnerThanks({ name, email, gift }: { name: string; email: s
   if (!sent) console.error('[partner form] thank-you email not sent');
 }
 
-/** The /welcome guest card (QR code handed out in-service): name + what they'd like help with, email and phone optional. */
-async function welcomeCard(body: Record<string, unknown>) {
-  const name = clean(body.name, LIMITS.name);
-  const interests = Array.isArray(body.interests)
-    ? body.interests.filter((v): v is string => typeof v === 'string' && WELCOME_INTERESTS.some((i) => i.value === v))
-    : [];
+/** The /welcome guest card's "Connect with us" form: first + last name required, phone/email optional. */
+async function welcomeConnect(body: Record<string, unknown>) {
+  const firstName = clean(body.firstName, LIMITS.name);
+  const lastName = clean(body.lastName, LIMITS.name);
   const email = clean(body.email, LIMITS.email);
   const phone = clean(body.phone, 30);
   const phoneDigits = phone.replace(/\D/g, '');
-  const anythingElse = clean(body.anythingElse, LIMITS.text);
-  if (!name) return fail(400, 'name_required');
-  if (interests.length === 0) return fail(400, 'interests_required');
+  const message = clean(body.message, LIMITS.text);
+  if (!firstName) return fail(400, 'first_name_required');
+  if (!lastName) return fail(400, 'last_name_required');
   if (email && !EMAIL_RE.test(email)) return fail(400, 'email_invalid');
   if (phone && (phoneDigits.length < 7 || phoneDigits.length > 15 || !PHONE_RE.test(phone))) return fail(400, 'phone_invalid');
 
-  const interestLabels = interests.map((v) => WELCOME_INTERESTS.find((i) => i.value === v)!.label);
-
   return deliver({
-    subject: `[ONEFORGE] welcome card — ${name}`,
+    subject: `[ONEFORGE] welcome — connect — ${firstName} ${lastName}`,
     fields: [
-      ['Name', name],
-      ['Interested in', interestLabels.join('; ')],
-      ['Email', email || '—'],
+      ['First name', firstName],
+      ['Last name', lastName],
       ['Phone', phone || '—'],
+      ['Email', email || '—'],
+      ['Message', message || '—'],
       ['OK to contact', body.contactConsent === true ? 'yes' : 'no'],
-      ['Anything else', anythingElse || '—'],
     ],
     to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
     replyTo: email || undefined,
-    data: { topic: 'welcome', name, interests, email: email || null, phone: phone || null },
-    sheet: { tab: 'Welcome card', columns: WELCOME_SHEET_COLUMNS },
+    data: { topic: 'welcome-connect', firstName, lastName, email: email || null, phone: phone || null },
+    sheet: { tab: 'Welcome connect', columns: WELCOME_CONNECT_SHEET_COLUMNS },
+  });
+}
+
+/** The /welcome guest card's "Serve with us" form: name + WhatsApp number + at least one area required. */
+async function welcomeServe(body: Record<string, unknown>) {
+  const firstName = clean(body.firstName, LIMITS.name);
+  const phoneRaw = clean(body.phone, 30);
+  const phoneDigits = phoneRaw.replace(/\D/g, '');
+  const email = clean(body.email, LIMITS.email);
+  const areas = Array.isArray(body.areas)
+    ? body.areas.filter((v): v is string => typeof v === 'string' && SERVE_AREAS.some((a) => a.value === v))
+    : [];
+  if (!firstName) return fail(400, 'first_name_required');
+  if (phoneDigits.length < 10 || phoneDigits.length > 15 || !PHONE_RE.test(phoneRaw)) return fail(400, 'phone_invalid');
+  if (email && !EMAIL_RE.test(email)) return fail(400, 'email_invalid');
+  if (areas.length === 0) return fail(400, 'areas_required');
+  if (body.consent !== true) return fail(400, 'consent_required');
+
+  const areaLabels = areas.map((v) => SERVE_AREAS.find((a) => a.value === v)!.label);
+
+  return deliver({
+    subject: `[ONEFORGE] welcome — serve — ${firstName}`,
+    fields: [
+      ['First name', firstName],
+      ['Phone', `+${phoneDigits}`],
+      ['Email', email || '—'],
+      ['Areas', areaLabels.join('; ')],
+      ['OK to contact', 'yes'],
+    ],
+    to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
+    replyTo: email || undefined,
+    data: { topic: 'welcome-serve', firstName, phone: `+${phoneDigits}`, email: email || null, areas },
+    sheet: { tab: 'Welcome serve', columns: WELCOME_SERVE_SHEET_COLUMNS },
   });
 }
 

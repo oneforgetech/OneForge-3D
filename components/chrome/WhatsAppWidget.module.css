@@ -1,4 +1,4 @@
-/* Sits above the hero's "Listen to latest sermon" card and the floating audio player (both live bottom-right). */
+/* Shows on every page. Sits above the home hero's "Listen to latest sermon" card and the floating audio player (both live bottom-right) wherever they're also on screen. */
 .widget {
   position: fixed;
   right: max(var(--gutter), env(safe-area-inset-right, 0px));

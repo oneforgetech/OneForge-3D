@@ -4,22 +4,22 @@ import { useEffect, useRef, useState } from 'react';
 import { IconCheck } from '@/components/ui/icons';
 import { track } from '@/lib/analytics';
 import { CHURCH_EMAIL } from '@/lib/church';
-import { WELCOME_INTERESTS } from '@/lib/welcome';
 import styles from './WelcomeForm.module.css';
 
-type Errors = Partial<Record<'name' | 'interests', string>>;
+type Errors = Partial<Record<'firstName' | 'lastName', string>>;
 
 /**
- * The online twin of the paper guest card handed out in-service — reached only by the
- * QR code printed on it, never linked from the site's own nav.
+ * "Connect with us" on the /welcome page: a short way to say you came, with room for a
+ * message. Phone and email are both optional — the contact-consent checkbox only shows up
+ * once one of them is filled in, so there's nothing to tick when there's no way to reply.
  */
-export function WelcomeForm() {
-  const [name, setName] = useState('');
-  const [interests, setInterests] = useState<string[]>([]);
-  const [email, setEmail] = useState('');
+export function WelcomeConnectForm() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
   const [contactConsent, setContactConsent] = useState(false);
-  const [anythingElse, setAnythingElse] = useState('');
   const [honeypot, setHoneypot] = useState('');
   const openedAt = useRef(0);
   useEffect(() => { openedAt.current = Date.now(); }, []);
@@ -28,17 +28,13 @@ export function WelcomeForm() {
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
-  const nameRef = useRef<HTMLInputElement>(null);
-  const interestsRef = useRef<HTMLFieldSetElement>(null);
-
-  function toggleInterest(value: string) {
-    setInterests((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
-  }
+  const firstNameRef = useRef<HTMLInputElement>(null);
+  const lastNameRef = useRef<HTMLInputElement>(null);
 
   function validate(): Errors {
     const next: Errors = {};
-    if (!name.trim()) next.name = "Let us know what name to use — doesn't have to be your full name.";
-    if (interests.length === 0) next.interests = 'Choose at least one, so we know how to help.';
+    if (!firstName.trim()) next.firstName = 'Tell us your first name.';
+    if (!lastName.trim()) next.lastName = 'Tell us your last name.';
     return next;
   }
 
@@ -48,8 +44,8 @@ export function WelcomeForm() {
     const nextErrors = validate();
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
-      if (nextErrors.name) nameRef.current?.focus();
-      else if (nextErrors.interests) interestsRef.current?.focus();
+      if (nextErrors.firstName) firstNameRef.current?.focus();
+      else if (nextErrors.lastName) lastNameRef.current?.focus();
       return;
     }
 
@@ -59,13 +55,13 @@ export function WelcomeForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          topic: 'welcome',
-          name,
-          interests,
-          email: email || undefined,
+          topic: 'welcome-connect',
+          firstName,
+          lastName,
           phone: phone || undefined,
+          email: email || undefined,
+          message: message || undefined,
           contactConsent: phone || email ? contactConsent : undefined,
-          anythingElse: anythingElse || undefined,
           website: honeypot,
           elapsedMs: Date.now() - openedAt.current,
         }),
@@ -76,7 +72,7 @@ export function WelcomeForm() {
         throw new Error('request failed');
       }
       setStatus('sent');
-      track('welcome_form_sent');
+      track('welcome_connect_form_sent');
     } catch {
       setStatus('error');
     }
@@ -88,7 +84,7 @@ export function WelcomeForm() {
         <span className={styles.confirmationIcon}>
           <IconCheck />
         </span>
-        <h2 className={`${styles.heading} display-heading`}>Thanks, {name || 'friend'}.</h2>
+        <h2 className={`${styles.heading} display-heading`}>Thanks, {firstName || 'friend'}.</h2>
         <p className={styles.confirmationBody}>
           Someone from our team has this. You&apos;re welcome to settle in — we&apos;ll find you.
         </p>
@@ -109,46 +105,36 @@ export function WelcomeForm() {
         aria-hidden="true"
       />
 
-      <fieldset
-        ref={interestsRef}
-        className={styles.field}
-        tabIndex={-1}
-        aria-describedby={errors.interests ? 'interests-error' : undefined}
-      >
-        <legend className={styles.label}>Let&apos;s connect</legend>
-        <span className={styles.hint}>What would you like help with? Choose any that apply.</span>
-        <div className={styles.pillGroup}>
-          {WELCOME_INTERESTS.map((i) => (
-            <label key={i.value} className={styles.pill}>
-              <input
-                type="checkbox"
-                checked={interests.includes(i.value)}
-                onChange={() => toggleInterest(i.value)}
-              />
-              {i.label}
-            </label>
-          ))}
-        </div>
-        {errors.interests && <span id="interests-error" className={styles.error}>{errors.interests}</span>}
-      </fieldset>
-
       <div className={`${styles.field} ${styles.half}`}>
-        <label className={styles.label} htmlFor="name">Name you&apos;d like us to use</label>
+        <label className={styles.label} htmlFor="firstName">First name</label>
         <input
-          ref={nameRef}
-          id="name"
+          ref={firstNameRef}
+          id="firstName"
           className={styles.input}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          aria-invalid={!!errors.name}
-          aria-describedby={errors.name ? 'name-error' : undefined}
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          aria-invalid={!!errors.firstName}
+          aria-describedby={errors.firstName ? 'firstName-error' : undefined}
         />
-        {errors.name && <span id="name-error" className={styles.error}>{errors.name}</span>}
+        {errors.firstName && <span id="firstName-error" className={styles.error}>{errors.firstName}</span>}
       </div>
 
       <div className={`${styles.field} ${styles.half}`}>
-        <label className={styles.label} htmlFor="phone">Phone number</label>
-        <span className={styles.hint}>If you&apos;d like us to get in touch</span>
+        <label className={styles.label} htmlFor="lastName">Last name</label>
+        <input
+          ref={lastNameRef}
+          id="lastName"
+          className={styles.input}
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          aria-invalid={!!errors.lastName}
+          aria-describedby={errors.lastName ? 'lastName-error' : undefined}
+        />
+        {errors.lastName && <span id="lastName-error" className={styles.error}>{errors.lastName}</span>}
+      </div>
+
+      <div className={`${styles.field} ${styles.half}`}>
+        <label className={styles.label} htmlFor="phone">Phone (optional)</label>
         <input
           id="phone"
           className={styles.input}
@@ -159,7 +145,7 @@ export function WelcomeForm() {
         />
       </div>
 
-      <div className={styles.field}>
+      <div className={`${styles.field} ${styles.half}`}>
         <label className={styles.label} htmlFor="email">Email (optional)</label>
         <input
           id="email"
@@ -173,18 +159,18 @@ export function WelcomeForm() {
       {(phone || email) && (
         <label className={styles.checkbox}>
           <input type="checkbox" checked={contactConsent} onChange={(e) => setContactConsent(e.target.checked)} />
-          Yes, ONEFORGE may contact me about the request I&apos;ve selected.
+          Yes, ONEFORGE may contact me.
         </label>
       )}
 
       <div className={styles.field}>
-        <label className={styles.label} htmlFor="anythingElse">Anything else you&apos;d like us to know?</label>
+        <label className={styles.label} htmlFor="message">Anything you&apos;d like to tell us? (optional)</label>
         <textarea
-          id="anythingElse"
+          id="message"
           className={styles.textarea}
-          value={anythingElse}
+          value={message}
           maxLength={1500}
-          onChange={(e) => setAnythingElse(e.target.value)}
+          onChange={(e) => setMessage(e.target.value)}
         />
       </div>
 
