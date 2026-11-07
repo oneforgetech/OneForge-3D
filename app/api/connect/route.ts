@@ -11,8 +11,9 @@ export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/connect — the "Say hello" form, (topic "partner") the /partner page's
- * "Let us say thank you" form, and the /welcome guest card's two forms: (topic
- * "welcome-connect") "Connect with us" and (topic "welcome-serve") "Serve with us".
+ * "Let us say thank you" form, and the /welcome page's cards: (topic "welcome-connect")
+ * "Connect with us", (topic "welcome-faith") "I'm new to faith", and (topic "welcome-serve")
+ * "Serve with us".
  *
  * Delivery (set at least one in production; see .env.example):
  *   - Email via Resend:  RESEND_API_KEY + CONNECT_FROM_EMAIL (+ CONNECT_TO_EMAIL, default hello@oneforge.org;
@@ -64,13 +65,12 @@ const WELCOME_CONNECT_SHEET_COLUMNS = [
   'Last name',
   'Phone',
   'Email',
-  'First time here',
-  'New to faith',
   'Stage of life',
   'Message',
   'OK to contact',
 ];
 const WELCOME_SERVE_SHEET_COLUMNS = ['First name', 'Phone', 'Email', 'Areas', 'OK to contact'];
+const WELCOME_FAITH_SHEET_COLUMNS = ['First name', 'Last name', 'Phone', 'Email', 'Message', 'OK to contact'];
 
 const MAX_BODY_BYTES = 12_000;
 const LIMITS = { name: 80, email: 120, text: 1500, short: 80 };
@@ -138,6 +138,7 @@ export async function POST(request: Request) {
 
   if (body.topic === 'partner') return partner(body);
   if (body.topic === 'welcome-connect') return welcomeConnect(body);
+  if (body.topic === 'welcome-faith') return welcomeFaith(body);
   if (body.topic === 'welcome-serve') return welcomeServe(body);
 
   // 5) validate
@@ -250,8 +251,6 @@ async function welcomeConnect(body: Record<string, unknown>) {
   const email = clean(body.email, LIMITS.email);
   const phone = clean(body.phone, 30);
   const phoneDigits = phone.replace(/\D/g, '');
-  const firstTime = body.firstTime === true;
-  const newToFaith = body.newToFaith === true;
   const stageOfLife = clean(body.stageOfLife, LIMITS.short);
   const message = clean(body.message, LIMITS.text);
   if (!firstName) return fail(400, 'first_name_required');
@@ -269,21 +268,49 @@ async function welcomeConnect(body: Record<string, unknown>) {
       ['Last name', lastName],
       ['Phone', phone || '—'],
       ['Email', email || '—'],
-      ['First time here', firstTime ? 'yes' : 'no'],
-      ['New to faith', newToFaith ? 'yes' : 'no'],
       ['Stage of life', stageOfLifeLabel],
       ['Message', message || '—'],
       ['OK to contact', body.contactConsent === true ? 'yes' : 'no'],
     ],
     to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
     replyTo: email || undefined,
-    data: { topic: 'welcome-connect', firstName, lastName, email: email || null, phone: phone || null, firstTime, newToFaith, stageOfLife },
+    data: { topic: 'welcome-connect', firstName, lastName, email: email || null, phone: phone || null, stageOfLife },
     sheet: { tab: 'Welcome connect', columns: WELCOME_CONNECT_SHEET_COLUMNS },
   });
   // Only once the entry has reached us, so a failed send (which they may retry) never gets a double reply.
   // Email is optional on this form, so there's often nowhere to send this.
   if (response.ok && email) await sendWelcomeConnectReply({ firstName, email });
   return response;
+}
+
+/** The /welcome page's "I'm new to faith" form: name required, phone/email optional, room for a prayer request. */
+async function welcomeFaith(body: Record<string, unknown>) {
+  const firstName = clean(body.firstName, LIMITS.name);
+  const lastName = clean(body.lastName, LIMITS.name);
+  const email = clean(body.email, LIMITS.email);
+  const phone = clean(body.phone, 30);
+  const phoneDigits = phone.replace(/\D/g, '');
+  const message = clean(body.message, LIMITS.text);
+  if (!firstName) return fail(400, 'first_name_required');
+  if (!lastName) return fail(400, 'last_name_required');
+  if (email && !EMAIL_RE.test(email)) return fail(400, 'email_invalid');
+  if (phone && (phoneDigits.length < 7 || phoneDigits.length > 15 || !PHONE_RE.test(phone))) return fail(400, 'phone_invalid');
+
+  return deliver({
+    subject: `[ONEFORGE] welcome — new to faith — ${firstName} ${lastName}`,
+    fields: [
+      ['First name', firstName],
+      ['Last name', lastName],
+      ['Phone', phone || '—'],
+      ['Email', email || '—'],
+      ['Message', message || '—'],
+      ['OK to contact', body.contactConsent === true ? 'yes' : 'no'],
+    ],
+    to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
+    replyTo: email || undefined,
+    data: { topic: 'welcome-faith', firstName, lastName, email: email || null, phone: phone || null },
+    sheet: { tab: 'Welcome faith', columns: WELCOME_FAITH_SHEET_COLUMNS },
+  });
 }
 
 /**

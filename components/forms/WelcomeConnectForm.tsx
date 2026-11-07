@@ -19,8 +19,6 @@ export function WelcomeConnectForm() {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [firstTime, setFirstTime] = useState(false);
-  const [newToFaith, setNewToFaith] = useState(false);
   const [stageOfLife, setStageOfLife] = useState('');
   const [message, setMessage] = useState('');
   const [contactConsent, setContactConsent] = useState(false);
@@ -67,8 +65,6 @@ export function WelcomeConnectForm() {
           lastName,
           phone: phone || undefined,
           email: email || undefined,
-          firstTime,
-          newToFaith,
           stageOfLife,
           message: message || undefined,
           contactConsent: phone || email ? contactConsent : undefined,
@@ -172,20 +168,6 @@ export function WelcomeConnectForm() {
           Yes, ONEFORGE may contact me.
         </label>
       )}
-
-      <fieldset className={styles.field}>
-        <legend className={styles.label}>New here?</legend>
-        <div className={styles.pillGroup}>
-          <label className={styles.pill}>
-            <input type="checkbox" checked={firstTime} onChange={(e) => setFirstTime(e.target.checked)} />
-            This is my first time here
-          </label>
-          <label className={styles.pill}>
-            <input type="checkbox" checked={newToFaith} onChange={(e) => setNewToFaith(e.target.checked)} />
-            I&apos;m new to faith
-          </label>
-        </div>
-      </fieldset>
 
       <fieldset
         ref={stageOfLifeRef}

@@ -22,8 +22,7 @@
   padding-top: clamp(16px, 3vw, 40px);
 }
 
-/* Connect / Serve / Give: two cards per row. The odd one out (Give, with 3 cards total)
-   spans the full row via .cardWide instead of leaving a half-empty row. */
+/* Connect, New to faith, Serve and Give: two cards per row, two rows. */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -45,10 +44,6 @@
   border-radius: 28px;
   border: 1.5px solid var(--glass-border-on-dark);
   background: var(--glass-bg-on-dark);
-}
-
-.cardWide {
-  grid-column: 1 / -1;
 }
 
 .cardTitle {

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ServeAreasModal } from '@/components/forms/ServeAreasModal';
 import { WelcomeConnectForm } from '@/components/forms/WelcomeConnectForm';
+import { WelcomeFaithForm } from '@/components/forms/WelcomeFaithForm';
 import { WelcomeFormModal } from '@/components/forms/WelcomeFormModal';
 import { WelcomeServeForm } from '@/components/forms/WelcomeServeForm';
 import { WelcomeInviteFriend } from '@/components/ui/WelcomeInviteFriend';
@@ -10,11 +11,12 @@ import { Pill, Section } from './Site';
 import styles from './Welcome.module.css';
 
 /**
- * The body of /welcome below the hero: Connect, Serve and Give as cards (two per row), each
- * opening its form in a modal instead of the page scrolling through full sections for them.
+ * The body of /welcome below the hero: Connect, New to faith, Serve and Give as cards (two per
+ * row), each opening its form in a modal instead of the page scrolling through full sections.
  */
 export function WelcomeSections() {
   const [connectOpen, setConnectOpen] = useState(false);
+  const [faithOpen, setFaithOpen] = useState(false);
   const [serveOpen, setServeOpen] = useState(false);
   const [areasOpen, setAreasOpen] = useState(false);
 
@@ -35,6 +37,19 @@ export function WelcomeSections() {
           </div>
 
           <div className={styles.card}>
+            <h2 className={`${styles.cardTitle} display-heading`}>I&apos;m new to faith.</h2>
+            <p className={styles.cardText}>
+              Taking a first step toward Jesus, or just have questions? We&apos;d love to talk — no pressure, just a
+              conversation.
+            </p>
+            <div className={styles.cardActions}>
+              <button type="button" className={styles.cardButton} onClick={() => setFaithOpen(true)}>
+                I&apos;d like to talk
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.card}>
             <h2 className={`${styles.cardTitle} display-heading`}>Serve with us.</h2>
             <p className={styles.cardText}>You don&apos;t have to be ready. You just have to be willing.</p>
             <div className={styles.cardActions}>
@@ -47,7 +62,7 @@ export function WelcomeSections() {
             </div>
           </div>
 
-          <div className={`${styles.card} ${styles.cardWide}`}>
+          <div className={styles.card}>
             <h2 className={`${styles.cardTitle} display-heading`}>Give.</h2>
             <p className={styles.cardText}>
               Your giving keeps the doors open for the next person who walks in. Give if and when it means something to you.
@@ -63,6 +78,10 @@ export function WelcomeSections() {
 
       <WelcomeFormModal open={connectOpen} onClose={() => setConnectOpen(false)} title="Connect with us.">
         <WelcomeConnectForm />
+      </WelcomeFormModal>
+
+      <WelcomeFormModal open={faithOpen} onClose={() => setFaithOpen(false)} title="I'm new to faith.">
+        <WelcomeFaithForm />
       </WelcomeFormModal>
 
       <WelcomeFormModal open={serveOpen} onClose={() => setServeOpen(false)} title="Serve with us.">
