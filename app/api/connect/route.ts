@@ -4,6 +4,7 @@ import { PARTNER_EMAIL, PARTNER_GIFT_OPTIONS } from '@/lib/partner';
 import { partnerThanksEmail } from '@/lib/partner-email';
 import { SERVE_AREAS } from '@/lib/serve';
 import { STAGE_OF_LIFE_OPTIONS } from '@/lib/stageOfLife';
+import { WELCOME_INTERESTS } from '@/lib/welcome';
 import { welcomeConnectReplyEmail } from '@/lib/welcome-email';
 
 export const runtime = 'nodejs';
@@ -65,6 +66,7 @@ const WELCOME_CONNECT_SHEET_COLUMNS = [
   'Last name',
   'Phone',
   'Email',
+  'Interested in',
   'Stage of life',
   'Message',
   'OK to contact',
@@ -251,6 +253,9 @@ async function welcomeConnect(body: Record<string, unknown>) {
   const email = clean(body.email, LIMITS.email);
   const phone = clean(body.phone, 30);
   const phoneDigits = phone.replace(/\D/g, '');
+  const interests = Array.isArray(body.interests)
+    ? body.interests.filter((v): v is string => typeof v === 'string' && WELCOME_INTERESTS.some((i) => i.value === v))
+    : [];
   const stageOfLife = clean(body.stageOfLife, LIMITS.short);
   const message = clean(body.message, LIMITS.text);
   if (!firstName) return fail(400, 'first_name_required');
@@ -260,6 +265,7 @@ async function welcomeConnect(body: Record<string, unknown>) {
   if (!STAGE_OF_LIFE_OPTIONS.some((s) => s.value === stageOfLife)) return fail(400, 'stage_of_life_required');
 
   const stageOfLifeLabel = STAGE_OF_LIFE_OPTIONS.find((s) => s.value === stageOfLife)!.label;
+  const interestLabels = interests.map((v) => WELCOME_INTERESTS.find((i) => i.value === v)!.label);
 
   const response = await deliver({
     subject: `[ONEFORGE] welcome — connect — ${firstName} ${lastName}`,
@@ -268,13 +274,14 @@ async function welcomeConnect(body: Record<string, unknown>) {
       ['Last name', lastName],
       ['Phone', phone || '—'],
       ['Email', email || '—'],
+      ['Interested in', interestLabels.join('; ') || '—'],
       ['Stage of life', stageOfLifeLabel],
       ['Message', message || '—'],
       ['OK to contact', body.contactConsent === true ? 'yes' : 'no'],
     ],
     to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
     replyTo: email || undefined,
-    data: { topic: 'welcome-connect', firstName, lastName, email: email || null, phone: phone || null, stageOfLife },
+    data: { topic: 'welcome-connect', firstName, lastName, email: email || null, phone: phone || null, interests, stageOfLife },
     sheet: { tab: 'Welcome connect', columns: WELCOME_CONNECT_SHEET_COLUMNS },
   });
   // Only once the entry has reached us, so a failed send (which they may retry) never gets a double reply.

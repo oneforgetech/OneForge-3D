@@ -5,16 +5,20 @@ import { IconCheck } from '@/components/ui/icons';
 import { track } from '@/lib/analytics';
 import { CHURCH_EMAIL } from '@/lib/church';
 import { STAGE_OF_LIFE_OPTIONS } from '@/lib/stageOfLife';
+import { WELCOME_INTERESTS } from '@/lib/welcome';
 import styles from './WelcomeForm.module.css';
 
 type Errors = Partial<Record<'firstName' | 'lastName' | 'stageOfLife', string>>;
 
 /**
  * "Connect with us" on the /welcome page: a short way to say you came, with room for a
- * message. Phone and email are both optional — the contact-consent checkbox only shows up
+ * message. The "Let's connect" interests (same options as the paper guest card) and the
+ * message box are both optional, so this is also just "I came, say hi" if that's all someone
+ * wants. Phone and email are both optional too — the contact-consent checkbox only shows up
  * once one of them is filled in, so there's nothing to tick when there's no way to reply.
  */
 export function WelcomeConnectForm() {
+  const [interests, setInterests] = useState<string[]>([]);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -33,6 +37,10 @@ export function WelcomeConnectForm() {
   const firstNameRef = useRef<HTMLInputElement>(null);
   const lastNameRef = useRef<HTMLInputElement>(null);
   const stageOfLifeRef = useRef<HTMLFieldSetElement>(null);
+
+  function toggleInterest(value: string) {
+    setInterests((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
+  }
 
   function validate(): Errors {
     const next: Errors = {};
@@ -61,6 +69,7 @@ export function WelcomeConnectForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           topic: 'welcome-connect',
+          interests,
           firstName,
           lastName,
           phone: phone || undefined,
@@ -110,6 +119,19 @@ export function WelcomeConnectForm() {
         autoComplete="off"
         aria-hidden="true"
       />
+
+      <fieldset className={styles.field}>
+        <legend className={styles.label}>Let&apos;s connect</legend>
+        <span className={styles.hint}>What would you like help with? Choose any that apply.</span>
+        <div className={styles.pillGroup}>
+          {WELCOME_INTERESTS.map((i) => (
+            <label key={i.value} className={styles.pill}>
+              <input type="checkbox" checked={interests.includes(i.value)} onChange={() => toggleInterest(i.value)} />
+              {i.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <div className={`${styles.field} ${styles.half}`}>
         <label className={styles.label} htmlFor="firstName">First name</label>
