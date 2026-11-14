@@ -120,19 +120,6 @@ export function WelcomeConnectForm() {
         aria-hidden="true"
       />
 
-      <fieldset className={styles.field}>
-        <legend className={styles.label}>Let&apos;s connect</legend>
-        <span className={styles.hint}>What would you like help with? Choose any that apply.</span>
-        <div className={styles.pillGroup}>
-          {WELCOME_INTERESTS.map((i) => (
-            <label key={i.value} className={styles.pill}>
-              <input type="checkbox" checked={interests.includes(i.value)} onChange={() => toggleInterest(i.value)} />
-              {i.label}
-            </label>
-          ))}
-        </div>
-      </fieldset>
-
       <div className={`${styles.field} ${styles.half}`}>
         <label className={styles.label} htmlFor="firstName">First name</label>
         <input
@@ -213,6 +200,19 @@ export function WelcomeConnectForm() {
           ))}
         </div>
         {errors.stageOfLife && <span id="stageOfLife-error" className={styles.error}>{errors.stageOfLife}</span>}
+      </fieldset>
+
+      <fieldset className={styles.field}>
+        <legend className={styles.label}>Let&apos;s connect</legend>
+        <span className={styles.hint}>What would you like help with? Choose any that apply.</span>
+        <div className={styles.pillGroup}>
+          {WELCOME_INTERESTS.map((i) => (
+            <label key={i.value} className={styles.pill}>
+              <input type="checkbox" checked={interests.includes(i.value)} onChange={() => toggleInterest(i.value)} />
+              {i.label}
+            </label>
+          ))}
+        </div>
       </fieldset>
 
       <div className={styles.field}>
