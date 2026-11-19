@@ -6,6 +6,9 @@ import { SERVE_AREAS } from '@/lib/serve';
 import { STAGE_OF_LIFE_OPTIONS } from '@/lib/stageOfLife';
 import { WELCOME_INTERESTS } from '@/lib/welcome';
 import { welcomeConnectReplyEmail } from '@/lib/welcome-email';
+import { hubConfigured, hubSubmit, newRequestId, type HubForm } from '@/lib/hub';
+import { validateJuniors } from '@/lib/juniors';
+import { cleanEmail, toE164 } from '@/lib/phone';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,6 +24,12 @@ export const dynamic = 'force-dynamic';
  *                        partner forms go to PARTNER_TO_EMAIL, default boye.oloyede@oneforge.org)
  *   - Google Sheet:      SHEETS_WEBHOOK_URL  (the Apps Script in integrations/google-sheet.gs; one tab per form)
  *   - Webhook:           CONNECT_WEBHOOK_URL  (Slack / Zapier / Make…)
+ *   - ONEFORGE Hub:      HUB_INTAKE_URL + HUB_INTAKE_SECRET (lib/hub.ts). Every entry goes straight to the Hub;
+ *                        a Hub outage never fails a form (the sheet still gets the row, with its hub_request_id,
+ *                        and the Hub's sheet sync backfills it). SHEET_WRITE_ENABLED=false switches the sheet
+ *                        write off once the Hub has run cleanly for two Sundays.
+ *   (topic "welcome-juniors", the Juniors registration, goes ONLY to the Hub: children's health details never
+ *    go to the sheet, email or webhooks.)
  * With none set, production answers 503 so nobody is ever told "we've got it" when we haven't.
  * (In local development it just logs, so the form can be tried without keys.)
  *
@@ -142,13 +151,15 @@ export async function POST(request: Request) {
   if (body.topic === 'welcome-connect') return welcomeConnect(body);
   if (body.topic === 'welcome-faith') return welcomeFaith(body);
   if (body.topic === 'welcome-serve') return welcomeServe(body);
+  if (body.topic === 'welcome-juniors') return welcomeJuniors(body);
 
   // 5) validate
   const firstName = clean(body.firstName, LIMITS.name);
   const whatsappRaw = clean(body.whatsapp, 30);
   const digits = whatsappRaw.replace(/\D/g, '');
   const topic = clean(body.topic, 20) as Topic;
-  const email = clean(body.email, LIMITS.email);
+  const email = cleanEmail(clean(body.email, LIMITS.email));
+  const whatsapp = toE164(whatsappRaw);
   if (!firstName) return fail(400, 'name_required');
   if (digits.length < 10 || digits.length > 15 || !PHONE_RE.test(whatsappRaw)) return fail(400, 'whatsapp_invalid');
   if (!TOPICS.includes(topic)) return fail(400, 'topic_invalid');
@@ -164,7 +175,7 @@ export async function POST(request: Request) {
 
   const fields: [string, string][] = [
     ['Name', firstName],
-    ['WhatsApp', `+${digits}`],
+    ['WhatsApp', whatsapp],
     ['Email', email || '—'],
     ['Topic', topic],
   ];
@@ -187,15 +198,16 @@ export async function POST(request: Request) {
     fields,
     to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
     replyTo: email,
-    data: { topic, name: firstName, whatsapp: `+${digits}`, email: email || null },
+    data: { topic, name: firstName, whatsapp, email: email || null },
     sheet: { tab: 'Say hello', columns: HELLO_SHEET_COLUMNS },
+    hub: 'hello',
   });
 }
 
 /** The partner page's "Let us say thank you" form: email is required, phone is optional, no WhatsApp permission. */
 async function partner(body: Record<string, unknown>) {
   const name = clean(body.name, LIMITS.name);
-  const email = clean(body.email, LIMITS.email);
+  const email = cleanEmail(clean(body.email, LIMITS.email));
   const phone = clean(body.phone, 30);
   const phoneDigits = phone.replace(/\D/g, '');
   const gift = clean(body.gift, 20);
@@ -209,14 +221,15 @@ async function partner(body: Record<string, unknown>) {
     fields: [
       ['Name', name],
       ['Email', email],
-      ['Phone or WhatsApp', phone || '—'],
+      ['Phone or WhatsApp', toE164(phone) || '—'],
       ['Gave to', PARTNER_GIFT_OPTIONS.find((o) => o.value === gift)?.label ?? gift],
       ['Reference', gift],
     ],
     to: process.env.PARTNER_TO_EMAIL || PARTNER_EMAIL,
     replyTo: email,
-    data: { topic: 'partner', name, email, phone: phone || null, gift },
+    data: { topic: 'partner', name, email, phone: toE164(phone) || null, gift },
     sheet: { tab: 'Partner' },
+    hub: 'partner',
   });
   // Only once the entry has reached us, so a failed send (which the giver may retry) never gets thanked twice.
   if (response.ok) await sendPartnerThanks({ name, email, gift });
@@ -250,7 +263,7 @@ async function sendPartnerThanks({ name, email, gift }: { name: string; email: s
 async function welcomeConnect(body: Record<string, unknown>) {
   const firstName = clean(body.firstName, LIMITS.name);
   const lastName = clean(body.lastName, LIMITS.name);
-  const email = clean(body.email, LIMITS.email);
+  const email = cleanEmail(clean(body.email, LIMITS.email));
   const phone = clean(body.phone, 30);
   const phoneDigits = phone.replace(/\D/g, '');
   const interests = Array.isArray(body.interests)
@@ -272,7 +285,7 @@ async function welcomeConnect(body: Record<string, unknown>) {
     fields: [
       ['First name', firstName],
       ['Last name', lastName],
-      ['Phone', phone || '—'],
+      ['Phone', toE164(phone) || '—'],
       ['Email', email || '—'],
       ['Interested in', interestLabels.join('; ') || '—'],
       ['Stage of life', stageOfLifeLabel],
@@ -281,8 +294,9 @@ async function welcomeConnect(body: Record<string, unknown>) {
     ],
     to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
     replyTo: email || undefined,
-    data: { topic: 'welcome-connect', firstName, lastName, email: email || null, phone: phone || null, interests, stageOfLife },
+    data: { topic: 'welcome-connect', firstName, lastName, email: email || null, phone: toE164(phone) || null, interests, stageOfLife },
     sheet: { tab: 'Welcome connect', columns: WELCOME_CONNECT_SHEET_COLUMNS },
+    hub: 'connect',
   });
   // Only once the entry has reached us, so a failed send (which they may retry) never gets a double reply.
   // Email is optional on this form, so there's often nowhere to send this.
@@ -294,7 +308,7 @@ async function welcomeConnect(body: Record<string, unknown>) {
 async function welcomeFaith(body: Record<string, unknown>) {
   const firstName = clean(body.firstName, LIMITS.name);
   const lastName = clean(body.lastName, LIMITS.name);
-  const email = clean(body.email, LIMITS.email);
+  const email = cleanEmail(clean(body.email, LIMITS.email));
   const phone = clean(body.phone, 30);
   const phoneDigits = phone.replace(/\D/g, '');
   const message = clean(body.message, LIMITS.text);
@@ -308,15 +322,16 @@ async function welcomeFaith(body: Record<string, unknown>) {
     fields: [
       ['First name', firstName],
       ['Last name', lastName],
-      ['Phone', phone || '—'],
+      ['Phone', toE164(phone) || '—'],
       ['Email', email || '—'],
       ['Message', message || '—'],
       ['OK to contact', body.contactConsent === true ? 'yes' : 'no'],
     ],
     to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
     replyTo: email || undefined,
-    data: { topic: 'welcome-faith', firstName, lastName, email: email || null, phone: phone || null },
+    data: { topic: 'welcome-faith', firstName, lastName, email: email || null, phone: toE164(phone) || null },
     sheet: { tab: 'Welcome faith', columns: WELCOME_FAITH_SHEET_COLUMNS },
+    hub: 'faith',
   });
 }
 
@@ -349,7 +364,7 @@ async function welcomeServe(body: Record<string, unknown>) {
   const firstName = clean(body.firstName, LIMITS.name);
   const phoneRaw = clean(body.phone, 30);
   const phoneDigits = phoneRaw.replace(/\D/g, '');
-  const email = clean(body.email, LIMITS.email);
+  const email = cleanEmail(clean(body.email, LIMITS.email));
   const areas = Array.isArray(body.areas)
     ? body.areas.filter((v): v is string => typeof v === 'string' && SERVE_AREAS.some((a) => a.value === v))
     : [];
@@ -365,16 +380,37 @@ async function welcomeServe(body: Record<string, unknown>) {
     subject: `[ONEFORGE] welcome — serve — ${firstName}`,
     fields: [
       ['First name', firstName],
-      ['Phone', `+${phoneDigits}`],
+      ['Phone', toE164(phoneRaw)],
       ['Email', email || '—'],
       ['Areas', areaLabels.join('; ')],
       ['OK to contact', 'yes'],
     ],
     to: process.env.CONNECT_TO_EMAIL || CHURCH_EMAIL,
     replyTo: email || undefined,
-    data: { topic: 'welcome-serve', firstName, phone: `+${phoneDigits}`, email: email || null, areas },
+    data: { topic: 'welcome-serve', firstName, phone: toE164(phoneRaw), email: email || null, areas },
     sheet: { tab: 'Welcome serve', columns: WELCOME_SERVE_SHEET_COLUMNS },
+    hub: 'serve',
   });
+}
+
+/**
+ * The /welcome "Register a child for ONEFORGE Juniors" form. It goes ONLY to ONEFORGE Hub, where the
+ * health details are encrypted; never to the sheet, email or a webhook. If the Hub can't be reached the
+ * parent is asked to try again (or register at the Juniors desk); nothing is stored anywhere else.
+ */
+async function welcomeJuniors(body: Record<string, unknown>) {
+  const v = validateJuniors(body);
+  if (!v.ok) return fail(400, v.error);
+  if (!hubConfigured()) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[juniors registration — dev only, nothing was sent; set HUB_INTAKE_URL and HUB_INTAKE_SECRET]');
+      return NextResponse.json({ ok: true, dev: true }, { headers: { 'Cache-Control': 'no-store' } });
+    }
+    return fail(503, 'not_configured');
+  }
+  const ok = await hubSubmit('juniors', v.fields, newRequestId());
+  if (!ok) return fail(502, 'hub_unavailable');
+  return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 async function deliver({
@@ -384,6 +420,7 @@ async function deliver({
   replyTo,
   data,
   sheet,
+  hub,
 }: {
   subject: string;
   fields: [string, string][];
@@ -392,13 +429,20 @@ async function deliver({
   data: Record<string, unknown>;
   /** The Google Sheet tab this form's entries go to, and its column order (default: the order of `fields`). */
   sheet: { tab: string; columns?: readonly string[] };
+  /** The Hub intake form this entry goes to (lib/hub.ts). */
+  hub: HubForm;
 }) {
   const text = [...fields, ['Received', new Date().toISOString()]].map(([k, v]) => `${k}: ${v}`).join('\n');
   const resendKey = process.env.RESEND_API_KEY;
   const from = process.env.CONNECT_FROM_EMAIL;
   const webhook = process.env.CONNECT_WEBHOOK_URL;
-  const sheetUrl = process.env.SHEETS_WEBHOOK_URL;
-  const configured = !!(resendKey && from) || !!webhook || !!sheetUrl;
+  const sheetUrl = process.env.SHEET_WRITE_ENABLED === 'false' ? undefined : process.env.SHEETS_WEBHOOK_URL;
+  const toHub = hubConfigured();
+  const configured = !!(resendKey && from) || !!webhook || !!sheetUrl || toHub;
+  // One id per entry: the Hub's idempotency key, also written into the sheet row so
+  // the Hub's sheet sync can match the two and never count an entry twice.
+  const requestId = newRequestId();
+  const row = sheetRow(fields, sheet.columns);
 
   if (!configured) {
     if (process.env.NODE_ENV !== 'production') {
@@ -429,7 +473,7 @@ async function deliver({
       fetch(sheetUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tab: sheet.tab, row: sheetRow(fields, sheet.columns) }),
+        body: JSON.stringify({ tab: sheet.tab, row: toHub ? { ...row, hub_request_id: requestId } : row }),
         signal: AbortSignal.timeout(15_000),
       })
         // Apps Script answers 200 even when the script fails (after a redirect, which fetch follows),
@@ -438,6 +482,7 @@ async function deliver({
         .catch(() => false),
     ]);
   }
+  if (toHub) attempts.push(['ONEFORGE Hub', hubSubmit(hub, row, requestId)]);
   if (webhook) {
     attempts.push([
       'webhook',

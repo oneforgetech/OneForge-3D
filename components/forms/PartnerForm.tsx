@@ -5,6 +5,7 @@ import { IconCheck } from '@/components/ui/icons';
 import { track } from '@/lib/analytics';
 import { CHURCH_EMAIL } from '@/lib/church';
 import { PARTNER_GIFT_OPTIONS } from '@/lib/partner';
+import { PrivacyLink } from './PrivacyLink';
 import styles from './ConnectForm.module.css';
 
 type Errors = Partial<Record<'name' | 'email', string>>;
@@ -146,6 +147,10 @@ export function PartnerForm({ className }: { className?: string }) {
           ))}
         </select>
       </div>
+
+      <p className={styles.fineprint}>
+        We only use this to thank you and to match your gift, and we never share it.<PrivacyLink />
+      </p>
 
       <button type="submit" className={styles.submit} disabled={status === 'sending'}>
         {status === 'sending' ? 'Sending…' : 'Send'}
