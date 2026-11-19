@@ -8,6 +8,7 @@ import { track } from '@/lib/analytics';
 import { CHURCH_EMAIL } from '@/lib/church';
 import { LAUNCH_DATE } from '@/lib/launch';
 import type { ConnectTopic } from '@/lib/connect';
+import { PrivacyLink } from './PrivacyLink';
 import styles from './ConnectForm.module.css';
 
 const TOPICS: { value: ConnectTopic; label: string }[] = [
@@ -367,7 +368,7 @@ export function ConnectForm() {
         Add me to the ONEFORGE WhatsApp community too.
       </label>
 
-      <p className={styles.fineprint}>We only use this to reply to you, and we never share it.</p>
+      <p className={styles.fineprint}>We only use this to reply to you, and we never share it.<PrivacyLink /></p>
 
       <button type="submit" className={styles.submit} disabled={status === 'sending'}>
         {status === 'sending' ? 'Sending…' : 'Send'}

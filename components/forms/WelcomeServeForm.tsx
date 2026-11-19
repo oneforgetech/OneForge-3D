@@ -5,6 +5,7 @@ import { IconCheck } from '@/components/ui/icons';
 import { track } from '@/lib/analytics';
 import { CHURCH_EMAIL } from '@/lib/church';
 import { SERVE_AREAS, SERVE_CHILDREN_NOTE } from '@/lib/serve';
+import { PrivacyLink } from './PrivacyLink';
 import styles from './WelcomeForm.module.css';
 
 type Errors = Partial<Record<'firstName' | 'phone' | 'areas' | 'consent', string>>;
@@ -190,7 +191,7 @@ export function WelcomeServeForm() {
       </label>
       {errors.consent && <span id="consent-error" className={styles.error}>{errors.consent}</span>}
 
-      <p className={styles.fineprint}>We only use this to reply to you, and we never share it.</p>
+      <p className={styles.fineprint}>We only use this to reply to you, and we never share it.<PrivacyLink /></p>
 
       <button type="submit" className={styles.submit} disabled={status === 'sending'}>
         {status === 'sending' ? 'Sending…' : 'Send'}

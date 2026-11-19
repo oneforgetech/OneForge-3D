@@ -6,6 +6,7 @@ import { track } from '@/lib/analytics';
 import { CHURCH_EMAIL } from '@/lib/church';
 import { STAGE_OF_LIFE_OPTIONS } from '@/lib/stageOfLife';
 import { WELCOME_INTERESTS } from '@/lib/welcome';
+import { PrivacyLink } from './PrivacyLink';
 import styles from './WelcomeForm.module.css';
 
 type Errors = Partial<Record<'firstName' | 'lastName' | 'stageOfLife', string>>;
@@ -228,6 +229,7 @@ export function WelcomeConnectForm() {
 
       <p className={styles.fineprint}>
         Share only what you&apos;re comfortable sharing. Your details stay with our church team and are never shared.
+        <PrivacyLink />
       </p>
 
       <button type="submit" className={styles.submit} disabled={status === 'sending'}>

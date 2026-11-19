@@ -5,13 +5,14 @@ import { ServeAreasModal } from '@/components/forms/ServeAreasModal';
 import { WelcomeConnectForm } from '@/components/forms/WelcomeConnectForm';
 import { WelcomeFaithForm } from '@/components/forms/WelcomeFaithForm';
 import { WelcomeFormModal } from '@/components/forms/WelcomeFormModal';
+import { WelcomeJuniorsForm } from '@/components/forms/WelcomeJuniorsForm';
 import { WelcomeServeForm } from '@/components/forms/WelcomeServeForm';
 import { WelcomeInviteFriend } from '@/components/ui/WelcomeInviteFriend';
 import { Pill, Section } from './Site';
 import styles from './Welcome.module.css';
 
 /**
- * The body of /welcome below the hero: Connect, New to faith, Serve and Give as cards (two per
+ * The body of /welcome below the hero: Connect, New to faith, Serve, Juniors and Give as cards (two per
  * row), each opening its form in a modal instead of the page scrolling through full sections.
  */
 export function WelcomeSections() {
@@ -19,6 +20,7 @@ export function WelcomeSections() {
   const [faithOpen, setFaithOpen] = useState(false);
   const [serveOpen, setServeOpen] = useState(false);
   const [areasOpen, setAreasOpen] = useState(false);
+  const [juniorsOpen, setJuniorsOpen] = useState(false);
 
   return (
     <>
@@ -63,6 +65,18 @@ export function WelcomeSections() {
           </div>
 
           <div className={styles.card}>
+            <h2 className={`${styles.cardTitle} display-heading`}>Bringing children?</h2>
+            <p className={styles.cardText}>
+              Register your child for ONEFORGE Juniors so our team can welcome them and keep them safe.
+            </p>
+            <div className={styles.cardActions}>
+              <button type="button" className={styles.cardButton} onClick={() => setJuniorsOpen(true)}>
+                Register a child
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.card}>
             <h2 className={`${styles.cardTitle} display-heading`}>Give.</h2>
             <p className={styles.cardText}>
               Your giving keeps the doors open for the next person who walks in. Give if and when it means something to you.
@@ -86,6 +100,10 @@ export function WelcomeSections() {
 
       <WelcomeFormModal open={serveOpen} onClose={() => setServeOpen(false)} title="Serve with us.">
         <WelcomeServeForm />
+      </WelcomeFormModal>
+
+      <WelcomeFormModal open={juniorsOpen} onClose={() => setJuniorsOpen(false)} title="Register for ONEFORGE Juniors.">
+        <WelcomeJuniorsForm />
       </WelcomeFormModal>
 
       <ServeAreasModal open={areasOpen} onClose={() => setAreasOpen(false)} />

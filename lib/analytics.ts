@@ -24,6 +24,7 @@ type Events = {
   welcome_connect_form_sent: Record<string, never>;
   welcome_faith_form_sent: Record<string, never>;
   welcome_serve_form_sent: Record<string, never>;
+  welcome_juniors_form_sent: Record<string, never>;
   copy_account_number: { bank: string; currency: string };
   invitation_video_open: Record<string, never>;
   listen_play: { episode: string };

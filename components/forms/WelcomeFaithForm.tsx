@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { IconCheck } from '@/components/ui/icons';
 import { track } from '@/lib/analytics';
 import { CHURCH_EMAIL } from '@/lib/church';
+import { PrivacyLink } from './PrivacyLink';
 import styles from './WelcomeForm.module.css';
 
 type Errors = Partial<Record<'firstName' | 'lastName', string>>;
@@ -176,6 +177,7 @@ export function WelcomeFaithForm() {
 
       <p className={styles.fineprint}>
         Share only what you&apos;re comfortable sharing. Your details stay with our church team and are never shared.
+        <PrivacyLink />
       </p>
 
       <button type="submit" className={styles.submit} disabled={status === 'sending'}>
